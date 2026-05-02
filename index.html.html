@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BNI Via del Sale — Gestionale</title>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     CONFIGURAZIONE FIREBASE
+     ─────────────────────────────────────────────────────────────
+     1. Vai su https://console.firebase.google.com
+     2. Crea un nuovo progetto (es. "bni-via-del-sale")
+     3. Vai su "Realtime Database" → Crea database → modalità test
+     4. Vai su Impostazioni progetto → Le tue app → Aggiungi app web
+     5. Copia i valori e incollali qui sotto
+     ═══════════════════════════════════════════════════════════════ -->
+<!-- Firebase SDK - caricati prima di tutto -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+  const FIREBASE_CONFIG = {
+    apiKey:            "AIzaSyB8vOn6eUE7_MZAkAJUuOShs7Yotq-eQjA",
+    authDomain:        "bni-project-b5103.firebaseapp.com",
+    databaseURL:       "https://bni-project-b5103-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId:         "bni-project-b5103",
+    storageBucket:     "bni-project-b5103.firebasestorage.app",
+    messagingSenderId: "566546435860",
+    appId:             "1:566546435860:web:f91fad2aae1caa223c7c01",
+    measurementId:     "G-BMYVTY8ZMR"
+  };
+</script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f4f5f7;min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit}
+
+/* ── SETUP BANNER ── */
+#setup-banner{background:#1e40af;color:white;padding:12px 20px;font-size:13px;text-align:center;line-height:1.6;display:none}
+#setup-banner a{color:#93c5fd;font-weight:700}
+#setup-banner.visible{display:block}
+
+/* ── SYNC INDICATOR ── */
+#sync-bar{background:#065f46;color:white;font-size:12px;padding:4px 16px;display:flex;align-items:center;gap:8px;min-height:24px}
+#sync-bar.error{background:#7f1d1d}
+#sync-dot{width:8px;height:8px;border-radius:50%;background:#34d399;flex-shrink:0}
+#sync-bar.error #sync-dot{background:#f87171}
+
+.hero{background:linear-gradient(135deg,#cc0000,#990000);color:white;padding:32px 28px;display:flex;align-items:center;gap:20px;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.hero-title{font-weight:900;font-size:28px;line-height:1.1}
+.hero-sub{font-size:15px;opacity:.88;margin-top:5px}
+.hero-date{font-size:13px;opacity:.72;margin-top:4px}
+.hero-stat{margin-left:auto;text-align:right}
+.hero-stat-num{font-size:30px;font-weight:900;opacity:.9}
+.hero-stat-label{font-size:12px;opacity:.7}
+.hero-sync{margin-top:6px;font-size:11px;opacity:.65;background:rgba(255,255,255,.15);border-radius:6px;padding:3px 8px}
+
+.tabs{background:#eef2f7;border-bottom:2px solid #d0daea;display:flex;overflow-x:auto;padding:0 6px;position:sticky;top:0;z-index:100;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.tab-btn{padding:13px 15px;background:transparent;color:#4a5568;border:none;border-bottom:3px solid transparent;font-weight:700;font-size:14px;white-space:nowrap;transition:all .2s;letter-spacing:.2px}
+.tab-btn:hover{background:#dde6f0;color:#1a202c}
+.tab-btn.active{background:#cc0000;color:white;border-bottom-color:#cc0000}
+.tab-badge{background:rgba(0,0,0,.12);border-radius:10px;padding:1px 6px;font-size:11px;margin-left:3px}
+.tab-btn.active .tab-badge{background:rgba(255,255,255,.28)}
+
+.content{padding:14px;max-width:1300px;margin:0 auto}
+
+.filter-bar{background:white;border-radius:12px;padding:14px;margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.filter-bar input,.filter-bar select{padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px}
+.filter-bar input{flex:1;min-width:180px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(295px,1fr));gap:12px}
+.card{background:white;border-radius:12px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.card-title{font-weight:700;font-size:15px;margin-bottom:10px;line-height:1.35}
+.badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.badge{padding:3px 10px;border-radius:12px;font-size:13px}
+.card-actions{display:flex;gap:8px}
+.btn-grey{flex:1;padding:9px 0;background:#f3f4f6;color:#333;border:none;border-radius:8px;font-size:14px;font-weight:600}
+.btn-grey:hover{background:#e5e7eb}
+.btn-blue{flex:1;padding:9px 0;background:#1d4ed8;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600}
+.btn-blue:hover{background:#1e40af}
+.btn-red{background:#cc0000;color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;padding:9px 18px}
+.btn-red:hover{background:#aa0000}
+.btn-sm{padding:5px 10px;background:#f3f4f6;border:none;border-radius:6px;font-size:13px}
+.btn-sm:hover{background:#e5e7eb}
+.btn-sm-blue{background:#1d4ed8;color:white;font-weight:600}
+.btn-sm-blue:hover{background:#1e40af}
+
+.agenda-block{background:white;border-radius:12px;margin-bottom:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.agenda-hd{color:white;padding:11px 18px;font-weight:700;font-size:15px;display:flex;justify-content:space-between}
+.agenda-hd.today{background:#cc0000}.agenda-hd.normal{background:#1f2937}
+.agenda-body{padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.agenda-row{display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:8px;border:1px solid #e5e7eb;background:#f9fafb}
+.agenda-row.reg{background:#fef2f2;border-color:#fca5a5}
+.agenda-row.evt{background:#fff7ed;border-color:#fed7aa}
+.agenda-time{color:white;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:700;flex-shrink:0}
+.agenda-name{font-weight:600;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.agenda-city{font-size:13px;color:#aaa}
+
+.cal-nav{display:flex;align-items:center;justify-content:space-between;background:white;border-radius:12px;padding:14px 20px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.cal-nav-btn{padding:8px 18px;background:#f3f4f6;border:none;border-radius:8px;font-size:18px;font-weight:700}
+.cal-nav-btn:hover{background:#e5e7eb}
+.cal-month{font-weight:800;font-size:20px;color:#1f2937}
+.cal-hd-row{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:5px}
+.cal-hd{text-align:center;font-weight:800;font-size:14px;color:#374151;padding:9px 0;background:white;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.cal-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.cal-cell{min-height:130px;background:white;border-radius:10px;padding:10px 11px;border:1px solid #e5e7eb;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.07);transition:box-shadow .15s}
+.cal-cell:hover{box-shadow:0 3px 10px rgba(0,0,0,.12)}
+.cal-cell.today{background:#fff1f1;border:2px solid #cc0000}
+.cal-cell.active{background:#eff6ff;border:2px solid #93c5fd}
+.cal-cell.empty{background:#f9fafb;opacity:.25;cursor:default;pointer-events:none}
+.cal-day{font-weight:800;font-size:17px;color:#1f2937;margin-bottom:7px}
+.cal-cell.today .cal-day{color:#cc0000}
+.cal-part{background:#1d4ed8;color:white;border-radius:6px;padding:4px 8px;font-size:12px;font-weight:700;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cal-chapname{font-size:11px;color:#374151;font-weight:600;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cal-dots{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px}
+.cal-dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.cal-evbadge{background:#f97316;color:white;border-radius:6px;padding:4px 8px;font-size:12px;font-weight:700;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cal-legend{margin-top:14px;display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:#666;align-items:center}
+
+.pcard{background:white;border-radius:12px;padding:16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.1);border-left:4px solid #cc0000}
+.pcard.past{border-left-color:#9ca3af;opacity:.85}
+.pcard-top{display:flex;gap:12px;align-items:flex-start}
+.pcard-info{flex:1}
+.pcard-note-box{margin-top:7px;padding:7px 10px;background:#fef3c7;border-radius:8px;font-size:13px;color:#92400e}
+.pcard-icons{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
+.pcard-del-row{margin-top:12px;border-top:1px solid #f3f4f6;padding-top:10px}
+.btn-del{width:100%;padding:8px 0;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;border-radius:8px;font-size:13px;font-weight:700}
+.btn-del:hover{background:#fecaca}
+.del-confirm{display:flex;gap:8px;align-items:center}
+.btn-cancel-del{padding:7px 14px;background:#f3f4f6;border:none;border-radius:8px;font-size:13px;font-weight:600}
+.btn-ok-del{padding:7px 14px;background:#b91c1c;color:white;border:none;border-radius:8px;font-size:13px;font-weight:700}
+
+.note-card{background:white;border-radius:12px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:5px solid #f59e0b}
+.note-card-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.note-card-title{font-weight:700;font-size:16px}
+.note-body{background:#fef3c7;border-radius:10px;padding:12px 14px;font-size:15px;color:#78350f;line-height:1.6}
+.badge-member{background:#1d4ed8;color:white;border-radius:12px;padding:3px 11px;font-size:13px;font-weight:700;white-space:nowrap;flex-shrink:0}
+.badge-cited{background:#ea580c;color:white;border-radius:12px;padding:3px 11px;font-size:13px;font-weight:700;white-space:nowrap;flex-shrink:0}
+
+.evcard{background:white;border-radius:12px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-top:4px solid #f97316}
+.evcard-actions{display:flex;gap:7px;margin-top:10px}
+.btn-ev-link{flex:1;padding:7px 0;background:#f3f4f6;border:none;border-radius:8px;font-size:13px}
+.btn-ev-del{flex:1;padding:7px 0;background:#fee2e2;color:#cc0000;border:none;border-radius:8px;font-size:13px;font-weight:600}
+
+.settings-card{background:white;border-radius:12px;padding:22px;box-shadow:0 1px 4px rgba(0,0,0,.08);max-width:520px}
+.member-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.member-tag{background:#f3f4f6;padding:7px 13px;border-radius:20px;font-size:14px;display:flex;align-items:center;gap:8px}
+.member-del-btn{background:none;border:none;color:#cc0000;cursor:pointer;font-size:18px;line-height:1;padding:0}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px}
+.modal-box{background:white;border-radius:16px;padding:24px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto}
+.modal-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.modal-title{font-size:17px;font-weight:700}
+.modal-close{background:none;border:none;font-size:26px;cursor:pointer;color:#666;line-height:1}
+.modal-chap-info{font-size:14px;color:#1d4ed8;font-weight:700;margin-bottom:14px;padding:9px 13px;background:#eff6ff;border-radius:8px;line-height:1.5}
+label.fl{display:block;font-size:14px;font-weight:600;color:#374151;margin-bottom:5px;margin-top:12px}
+label.fl:first-of-type{margin-top:0}
+.fi{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:15px;box-sizing:border-box}
+textarea.fi{height:80px;resize:vertical}
+.form-row{display:flex;gap:8px}
+.form-row>div{flex:1}
+.modal-actions{display:flex;gap:8px;margin-top:16px}
+.btn-ma-cancel{flex:1;padding:11px;background:#f3f4f6;border:none;border-radius:8px;font-size:14px}
+.btn-ma-ok{flex:1;padding:11px;color:white;border:none;border-radius:8px;font-size:14px;font-weight:700}
+.btn-ma-ok.red{background:#cc0000}.btn-ma-ok.blue{background:#1d4ed8}
+
+.detail-sec{font-weight:700;font-size:14px;margin:10px 0 8px}
+.detail-chap{display:flex;align-items:center;gap:8px;padding:7px 10px;background:#f9fafb;border-radius:8px;margin-bottom:6px;border:1px solid #e5e7eb}
+.detail-chap-name{flex:1;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.detail-event{padding:8px 12px;background:#fff7ed;border-radius:8px;margin-bottom:6px;border:1px solid #fed7aa}
+.empty{text-align:center;padding:60px;color:#bbb}
+.empty-icon{font-size:48px;margin-bottom:12px}
+.section-hd{font-size:16px;font-weight:700;margin-bottom:10px}
+.hint{color:#888;font-size:14px;margin-bottom:10px}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- Banner setup (visibile se Firebase non configurato) -->
+<div id="setup-banner">
+  ⚠️ <strong>Firebase non configurato.</strong> I dati vengono salvati solo localmente su questo PC.
+  Leggi le istruzioni nel codice sorgente per abilitare la sincronizzazione multi-utente.
+  <a href="https://console.firebase.google.com" target="_blank">Apri Firebase Console →</a>
+</div>
+
+<!-- Barra stato sincronizzazione -->
+<div id="sync-bar">
+  <div id="sync-dot"></div>
+  <span id="sync-msg">Connessione in corso...</span>
+</div>
+
+<div id="app"></div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  DATI CAPITOLI
+// ══════════════════════════════════════════════════════
+const CHAPTERS=[
+ {id:"c1",nome:"BNI Ambizioso AL - 15 Alessandria",città:"Alessandria",regione:"Piemonte",giorno:"Venerdì",orario:"13:30",url:"https://bni-italia.com/it/chapterdetail?chapterId=7apLsSgi3RBxpUCG7cKOaw%3D%3D&name=BNI+BNI+Ambizioso+AL"},
+ {id:"c2",nome:"BNI Ambizioso CN - 14 Piemonte Sud",città:"Cuneo",regione:"Piemonte",giorno:"Giovedì",orario:"12:30",url:"https://bni-italia.com/it/chapterdetail?chapterId=qxBg0SsYsV%2Fm7zJl%2FFkD%2Fw%3D%3D&name=BNI+BNI+Ambizioso+CN"},
+ {id:"c3",nome:"BNI Armonia - 12 Torino Sud Ovest",città:"Torino",regione:"Piemonte",giorno:"Giovedì",orario:"07:00",url:"https://bni-italia.com/it/chapterdetail?chapterId=%2BkF30d1aghATqWM%2FjIQ6NA%3D%3D&name=BNI+BNI+Armonia"},
+ {id:"c4",nome:"BNI Cuneo Digital - 14 Piemonte Sud",città:"Savigliano",regione:"Piemonte",giorno:"Martedì",orario:"19:30",url:"https://bni-italia.com/it/chapterdetail?chapterId=L3bPrmIjYJ7d2aaiymTp9w%3D%3D&name=BNI+BNI+Cuneo+Digital"},
+ {id:"c5",nome:"BNI Eridano - 12 Torino Sud Ovest",città:"Torino",regione:"Piemonte",giorno:"Giovedì",orario:"07:00",url:"https://bni-italia.com/it/chapterdetail?chapterId=%2BvhPD4un%2FH%2BT%2B4P4ibw3XQ%3D%3D&name=BNI+BNI+Eridano"},
+ {id:"c6",nome:"BNI IVORY - 14 Piemonte Sud",città:"Vercelli",regione:"Piemonte",giorno:"Giovedì",orario:"07:00",url:"https://bni-italia.com/it/chapterdetail?chapterId=wLKE9DzzwDCh858Gw2o%2F9w%3D%3D&name=BNI+BNI+IVORY"},
+ {id:"c7",nome:"BNI Lago Maggiore - 13 Piemonte Nord",città:"Arona",regione:"Piemonte",giorno:"Giovedì",orario:"12:30",url:"https://bni-piemontenord.it/13-piemonte-nord-valle-d-aosta-bni-lago-maggiore/it/index"},
+ {id:"c8",nome:"BNI Le Baragge - 13 Piemonte Nord",città:"Gattinara",regione:"Piemonte",giorno:"Venerdì",orario:"12:30",url:"https://bni-italia.com/it/chapterdetail?chapterId=ZcUo6C7Zq%2FZuUoq%2Fz4WiGw%3D%3D&name=BNI+BNI+Le+Baragge"},
+ {id:"c9",nome:"BNI Monviso - 12 Torino Sud Ovest",città:"Torino",regione:"Piemonte",giorno:"Venerdì",orario:"07:00",url:"https://bni-italia.com/it/chapterdetail?chapterId=FuTMGAA%2FriMGGB1brbG3lA%3D%3D&name=BNI+BNI+Monviso"},
+ {id:"c10",nome:"BNI Mozart - 11 Torino Nord Est",città:"Torino",regione:"Piemonte",giorno:"Martedì",orario:"07:00",url:"https://bni-italia.com/it/chapterdetail?chapterId=PLp6z72N6gNf%2FJbUaPhaUw%3D%3D&name=BNI+BNI+Mozart"},
+ {id:"c11",nome:"BNI Musinè - 12 Torino Sud Ovest",città:"Torino",regione:"Piemonte",giorno:"Venerdì",orario:"07:00",url:"https://bni-italia.com/it/chapterdetail?chapterId=nQkP%2FOaeADl0jbHT2TMhaQ%3D%3D&name=BNI+BNI+Musin%C3%A8"},
+ {id:"c12",nome:"BNI NIKE - 15 Alessandria",città:"Alessandria",regione:"Piemonte",giorno:"Giovedì",orario:"12:30",url:"https://bni-italia.com/it/chapterdetail?chapterId=P4bGDvZg5DomX%2Barkzg7Zg%3D%3D&name=BNI+BNI+NIKE"},
+ {id:"c13",nome:"BNI Novaria - 13 Piemonte Nord",città:"Novara",regione:"Piemonte",giorno:"Mercoledì",orario:"12:15",url:"https://bni-italia.com/it/chapterdetail?chapterId=uV0JJuXVCJ0ZwoNFC9rrIw%3D%3D&name=BNI+BNI+Novaria"},
+ {id:"c14",nome:"BNI Sfera - 11 Torino Nord Est",città:"Settimo Torinese",regione:"Piemonte",giorno:"Mercoledì",orario:"07:00",url:"https://bni-italia.com/it/chapterdetail?chapterId=4XWgcWQhd63ZvJMVDiTTHg%3D%3D&name=BNI+BNI+Sfera"},
+ {id:"c15",nome:"BNI The Millennials - 15 Alessandria",città:"",regione:"Piemonte",giorno:"Martedì",orario:"13:00",url:"https://bni-italia.com/it/chapterdetail?chapterId=puoT7MrKbaTnxGzJl0Es1w%3D%3D&name=BNI+BNI+The+Millennials"},
+ {id:"c16",nome:"BNI Ambizioso SV - 17 Riviere Liguri",città:"Vado Ligure",regione:"Liguria",giorno:"Mercoledì",orario:"18:00",url:"https://bni-italia.com/it/chapterdetail?chapterId=8nQtpcAaaylFOgGf4BAceA%3D%3D&name=BNI+BNI+Ambizioso+SV"},
+ {id:"c17",nome:"BNI 434 - 31 Verona",città:"Roverchiara",regione:"Veneto",giorno:"Giovedì",orario:"19:45",url:"https://bni-italia.com/it/chapterdetail?chapterId=%2BH49hpas%2BEazpuooFKpEmA%3D%3D&name=BNI+BNI+434"},
+ {id:"c18",nome:"BNI Adige - 31 Verona",città:"Villafranca",regione:"Veneto",giorno:"Martedì",orario:"12:30",url:"https://bni-italia.com/it/chapterdetail?chapterId=LoFmWxBZiPutlEg1ahMr9A%3D%3D&name=BNI+BNI+Adige"},
+ {id:"c19",nome:"BNI Cangrande - 31 Verona",città:"San Martino Buon Albergo",regione:"Veneto",giorno:"Lunedì",orario:"13:00",url:"https://bni-italia.com/it/chapterdetail?chapterId=nei4ChSgUW75RDQuBbWiHA%3D%3D&name=BNI+BNI+Cangrande"},
+ {id:"c20",nome:"BNI Castelvecchio - 31 Verona",città:"Verona",regione:"Veneto",giorno:"Mercoledì",orario:"13:00",url:"https://bni-italia.com/it/chapterdetail?chapterId=Uwkkj7roe0DEGxoOtYPPXg%3D%3D&name=BNI+BNI+Castelvecchio"},
+ {id:"c21",nome:"BNI G.POWER - 32 Vicenza",città:"Marostica",regione:"Veneto",giorno:"Lunedì",orario:"13:30",url:"https://bni-italia.com/it/chapterdetail?chapterId=2qV0IhmNY5zmIRzEmAPDzQ%3D%3D&name=BNI+BNI+G.POWER"},
+ {id:"c22",nome:"BNI Lago di Garda - 31 Verona",città:"Peschiera del Garda",regione:"Veneto",giorno:"Mercoledì",orario:"13:00",url:"https://bni-italia.com/it/chapterdetail?chapterId=b7XoLV7Msuo6548vKJUQ8g%3D%3D&name=BNI+BNI+Lago+di+Garda"},
+ {id:"c23",nome:"BNI Pantheon - 35 Treviso - Belluno",città:"Treviso",regione:"Veneto",giorno:"Giovedì",orario:"18:30",url:"https://bni-italia.com/it/chapterdetail?chapterId=z0rvVM9BpEYwiZAx3xwQww%3D%3D&name=BNI+BNI+Pantheon"},
+ {id:"c24",nome:"BNI Piazza Dante - 31 Verona",città:"Verona",regione:"Veneto",giorno:"Giovedì",orario:"12:45",url:"https://bni-italia.com/it/chapterdetail?chapterId=%2BJmUab8tu6%2B3X81iQ%2BGBBA%3D%3D&name=BNI+BNI+Piazza+Dante"},
+ {id:"c25",nome:"BNI Quadrilatero - 31 Verona",città:"Bassana",regione:"Veneto",giorno:"Venerdì",orario:"12:45",url:"https://bni-italia.com/it/chapterdetail?chapterId=nA%2Bdt4gJ%2FqBj0WTVRZ3Eiw%3D%3D&name=BNI+BNI+Quadrilatero"},
+ {id:"c26",nome:"BNI San Giovanni Lupatoto - 31 Verona",città:"Santa Maria di Zevio",regione:"Veneto",giorno:"Mercoledì",orario:"12:30",url:"https://bni-italia.com/it/chapterdetail?chapterId=iGEMb5NhbzXYpTJPoFR8eg%3D%3D&name=BNI+BNI+San+Giovanni+Lupatoto"},
+ {id:"c27",nome:"BNI Scaligero - 31 Verona",città:"Verona",regione:"Veneto",giorno:"Martedì",orario:"12:45",url:"https://bni-italia.com/it/chapterdetail?chapterId=ioRoxRUS7Q8pX3Xe%2B3pCOA%3D%3D&name=BNI+BNI+Scaligero"},
+ {id:"c28",nome:"BNI Soave - 31 Verona",città:"Monteforte d'Alpone",regione:"Veneto",giorno:"Giovedì",orario:"13:00",url:"https://bni-italia.com/it/chapterdetail?chapterId=mHesjkX6E3ZHydvdvootMg%3D%3D&name=BNI+BNI+Soave"},
+ {id:"c29",nome:"BNI Valpantena - 31 Verona",città:"Verona",regione:"Veneto",giorno:"Mercoledì",orario:"18:30",url:"https://bni-italia.com/it/chapterdetail?chapterId=NV82Mj4PD%2FIrgJvB%2FwWUUg%3D%3D&name=BNI+BNI+Valpantena"},
+ {id:"c30",nome:"BNI Valpolicella - 31 Verona",città:"Cengia",regione:"Veneto",giorno:"Venerdì",orario:"13:45",url:"https://bni-italia.com/it/chapterdetail?chapterId=u3NV4Crp60Pg3iuuNJujvA%3D%3D&name=BNI+BNI+Valpolicella"},
+ {id:"c31",nome:"BNI Venezia - 34 Venezia",città:"Venezia",regione:"Veneto",giorno:"Martedì",orario:"07:15",url:"https://bni-italia.com/it/chapterdetail?chapterId=l7Ng26NLSjV8v%2BjpWXSOdQ%3D%3D&name=BNI+BNI+Venezia"},
+ {id:"c32",nome:"BNI Costa degli Etruschi - 46 Toscana",città:"Vada (Li)",regione:"Toscana",giorno:"Martedì",orario:"18:15",url:"https://bni-italia.com/it/chapterdetail?chapterId=ovpKJRWc8AzaXQ3KUbQbVQ%3D%3D&name=BNI+BNI+Costa+degli+Etruschi"},
+ {id:"c33",nome:"BNI AdSextum - 25 Varese",città:"Somma Lombardo",regione:"Lombardia",giorno:"Martedì",orario:"07:15",url:"https://bni-italia.com/it/chapterdetail?chapterId=DdlRWclR5GV4c6fasYFvbA%3D%3D&name=BNI+BNI+AdSextum"},
+ {id:"c34",nome:"BNI Certosa - 21 Milano Nord",città:"Milano",regione:"Lombardia",giorno:"Giovedì",orario:"07:30",url:"https://bni-italia.com/it/chapterdetail?chapterId=qwknhLhHNvPdm80mC6d4lQ%3D%3D&name=BNI+BNI+Certosa"},
+ {id:"c35",nome:"BNI Green - 23B Milano Provincia SO",città:"Opera",regione:"Lombardia",giorno:"Venerdì",orario:"11:45",url:"https://bni-italia.com/it/chapterdetail?chapterId=jVlgbQ%2BrgLN0flvY9sVJnA%3D%3D&name=BNI+BNI+Green"},
+ {id:"c36",nome:"BNI Hybrid Cremona - 27 Lombardia Sud",città:"Cremona",regione:"Lombardia",giorno:"Martedì",orario:"12:15",url:"https://bni-italia.com/it/chapterdetail?chapterId=Fk5zuhjkiY1OvdlxowZQ3g%3D%3D&name=BNI+BNI+Hybrid+Cremona"},
+ {id:"c37",nome:"BNI I 2 cavalli - 27 Lombardia Sud",città:"Piacenza",regione:"Lombardia",giorno:"Giovedì",orario:"12:00",url:"https://bni-italia.com/it/chapterdetail?chapterId=zbTB6zlihDv3ApQ0AAW6vQ%3D%3D&name=BNI+BNI+I+2+cavalli"},
+ {id:"c38",nome:"BNI Ibrido_Varese - 25 Varese",città:"",regione:"Lombardia",giorno:"Venerdì",orario:"07:30",url:"https://bni-italia.com/it/chapterdetail?chapterId=4h2Lq5uTAJH24FgWkGleFA%3D%3D&name=BNI+BNI+Ibrido_Varese"},
+ {id:"c39",nome:"BNI Kaleidos - 27 Lombardia Sud",città:"Voghera",regione:"Lombardia",giorno:"Mercoledì",orario:"12:00",url:"https://bni-italia.com/it/chapterdetail?chapterId=Sg%2B95YWqcPa9YXCZZ20W9w%3D%3D&name=BNI+BNI+Kaleidos"},
+ {id:"c40",nome:"BNI L'ora giusta - 22 Milano Sud Est",città:"Milano",regione:"Lombardia",giorno:"Mercoledì",orario:"13:30",url:"https://bni-italia.com/it/chapterdetail?chapterId=JmGbAkQsMUhaBeGvjIzPKg%3D%3D&name=BNI+BNI+L%27ora+giusta"},
+ {id:"c41",nome:"BNI La Tavola Rotonda - 27 Lombardia Sud",città:"Roveleto",regione:"Lombardia",giorno:"Martedì",orario:"12:00",url:"https://bni-italia.com/it/chapterdetail?chapterId=t9nalbsDNt%2BnWhm8oHekKg%3D%3D&name=BNI+BNI+La+Tavola+Rotonda"},
+ {id:"c42",nome:"BNI Meta Papias - 27 Lombardia Sud",città:"San Martino Siccomario",regione:"Lombardia",giorno:"Venerdì",orario:"12:00",url:"https://bni-italia.com/it/chapterdetail?chapterId=C0KlnPvD0Km4pBABvKqyHw%3D%3D&name=BNI+BNI+Meta+Papias"},
+ {id:"c43",nome:"BNI Ore13 - 21 Milano Nord",città:"Milano",regione:"Lombardia",giorno:"Giovedì",orario:"13:00",url:"https://bni-italia.com/it/chapterdetail?chapterId=JmGbAkQsMUhaBeGvjIzPKg%3D%3D"},
+ {id:"c44",nome:"BNI Orus - 27 Lombardia Sud",città:"San Martino in Strada",regione:"Lombardia",giorno:"Venerdì",orario:"07:00",url:"https://bni-italia.com/it/chapterdetail?chapterId=2Z%2Fa9NqVGR%2FKph5qaQth6w%3D%3D&name=BNI+BNI+Orus"},
+ {id:"c45",nome:"BNI Patra - 27 Lombardia Sud",città:"",regione:"Lombardia",giorno:"Mercoledì",orario:"12:00",url:"https://bni-italia.com/it/chapterdetail?chapterId=%2F5wOR9WhxDhsQtmgfkVXxw%3D%3D&name=BNI+BNI+Patra"},
+ {id:"c46",nome:"BNI Santa Caterina - 28 Bergamo",città:"Bergamo-Grassobbio",regione:"Lombardia",giorno:"Mercoledì",orario:"07:00",url:"https://bni-italia.com/it/chapterdetail?chapterId=532i7a%2B%2BhWvUhXzGt2LrZg%3D%3D&name=BNI+BNI+Santa+Caterina"},
+ {id:"c47",nome:"BNI Carpe Diem - 41 Modena-Mantova",città:"Castelnuovo Rangone",regione:"Emilia Romagna",giorno:"Mercoledì",orario:"12:30",url:"https://bni-italia.com/it/chapterdetail?chapterId=70%2Ftu7wZX3N02fDsTHuhjA%3D%3D&name=BNI+BNI+Carpe+Diem"},
+ {id:"c48",nome:"BNI Duca D'Este Ibrido - 41 Modena",città:"Modena",regione:"Emilia Romagna",giorno:"Venerdì",orario:"07:30",url:"https://bni-italia.com/it/chapterdetail?chapterId=ePT%2BdWT9AUrbcMzXUnBcvg%3D%3D&name=BNI+BNI+Duca+D%27Este+Ibrido"},
+ {id:"c49",nome:"BNI Golfo dei Poeti - 42 Emilia Ovest",città:"Sarzana",regione:"Emilia Romagna",giorno:"Venerdì",orario:"12:00",url:"https://bni-italia.com/it/chapterdetail?chapterId=2R871inCD8lQnabp7ID%2FKQ%3D%3D&name=BNI+BNI+Golfo+dei+Poeti"},
+ {id:"c50",nome:"BNI Maioliche - 52 Romagna",città:"Faenza",regione:"Emilia Romagna",giorno:"Venerdì",orario:"07:15",url:"https://bni-italia.com/it/chapterdetail?chapterId=ave8N44hXVZ1mLoarjafSA%3D%3D&name=BNI+BNI+Maioliche"},
+ {id:"c51",nome:"BNI Mosaico - 52 Romagna",città:"San Pancrazio",regione:"Emilia Romagna",giorno:"Giovedì",orario:"07:15",url:"https://bni-italia.com/it/chapterdetail?chapterId=2CWMSwPodhtHUyp4m%2F0d0A%3D%3D&name=BNI+BNI+Mosaico"},
+ {id:"c52",nome:"BNI Niballo - 52 Romagna",città:"Faenza",regione:"Emilia Romagna",giorno:"Mercoledì",orario:"12:30",url:"https://bni-italia.com/it/chapterdetail?chapterId=50%2BSzEBXqBtcpXl6mwFAwQ%3D%3D&name=BNI+BNI+Niballo"},
+ {id:"c53",nome:"BNI San Marino - 52 Romagna",città:"Falciano",regione:"Emilia Romagna",giorno:"Martedì",orario:"17:00",url:"https://bni-italia.com/it/chapterdetail?chapterId=sAW%2B7no%2FWUUp9IpCvJVAMA%3D%3D&name=BNI+BNI+San+Marino"},
+ {id:"c54",nome:"BNI Teodora - 52 Romagna",città:"Ravenna",regione:"Emilia Romagna",giorno:"Mercoledì",orario:"18:45",url:"https://bni-italia.com/it/chapterdetail?chapterId=80TYKmHJRDyJOjZq6q6%2FdQ%3D%3D&name=BNI+BNI+Teodora"},
+ {id:"c55",nome:"BNI Terre Dei Castelli - 41 Modena-Mantova",città:"Spilamberto (MO)",regione:"Emilia Romagna",giorno:"Mercoledì",orario:"07:00",url:"https://bni-italia.com/it/chapterdetail?chapterId=HcGNg6RWVpBD1zwcVaTqsA%3D%3D&name=BNI+BNI+Terre+Dei+Castelli"}
+];
+
+const DAY_COL={"Lunedì":"#6366f1","Martedì":"#f59e0b","Mercoledì":"#10b981","Giovedì":"#3b82f6","Venerdì":"#ef4444"};
+const REG_COL={"Piemonte":"#8b5cf6","Liguria":"#06b6d4","Veneto":"#f97316","Toscana":"#84cc16","Lombardia":"#ec4899","Emilia Romagna":"#14b8a6"};
+const REGIONI=[...new Set(CHAPTERS.map(c=>c.regione))].sort();
+const DAYS_ORDER=["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì"];
+const MONTHS_IT=["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+const DAY_FROM_IDX=["Domenica","Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato"];
+const DAY_NUM={"Lunedì":1,"Martedì":2,"Mercoledì":3,"Giovedì":4,"Venerdì":5};
+
+// ══════════════════════════════════════════════════════
+//  FIREBASE SETUP
+// ══════════════════════════════════════════════════════
+window.addEventListener('load', function() {
+
+let db = null;
+const firebaseReady = typeof firebase !== 'undefined' && FIREBASE_CONFIG.apiKey && !FIREBASE_CONFIG.apiKey.includes('INCOLLA_QUI');
+
+if (firebaseReady) {
+  firebase.initializeApp(FIREBASE_CONFIG);
+  db = firebase.database();
+  setSyncStatus('connecting');
+} else {
+  document.getElementById('setup-banner').classList.add('visible');
+  setSyncStatus('local');
+}
+
+function setSyncStatus(state, extra) {
+  const bar = document.getElementById('sync-bar');
+  const dot = document.getElementById('sync-dot');
+  const msg = document.getElementById('sync-msg');
+  bar.className = state === 'error' ? 'error' : '';
+  dot.style.background = state === 'connected' ? '#34d399' : state === 'local' ? '#fbbf24' : state === 'error' ? '#f87171' : '#93c5fd';
+  const labels = { connected:'Sincronizzato con Firebase — modifiche visibili a tutti in tempo reale', local:'Modalità locale — dati salvati solo su questo PC (configura Firebase per la sincronizzazione)', connecting:'Connessione a Firebase in corso...', saving:'Salvataggio in corso...', error:'Errore di connessione — ricarica la pagina' };
+  msg.textContent = (labels[state] || state) + (extra ? ' · ' + extra : '');
+}
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+let S = {
+  tab:'capitoli', search:'', fDay:'Tutti', fReg:'Tutte',
+  participations: [], customEvents: [], members: [],
+  calYear: new Date().getFullYear(), calMonth: new Date().getMonth(),
+  calDayDetail: null,
+  showReg:false, selChap:null,
+  showNote:false, selPart:null,
+  showEvt:false, confirmDeleteId:null,
+};
+
+// ── Fallback localStorage se Firebase non configurato ──
+function lsLoad(k,def){ try{return JSON.parse(localStorage.getItem(k)||'null')||def;}catch(e){return def;} }
+function lsSave(k,v){ localStorage.setItem(k,JSON.stringify(v)); }
+
+// ── Firebase listeners (real-time) ────────────────────
+function initFirebaseListeners() {
+  const refs = { participations:'bni_parts', customEvents:'bni_events', members:'bni_members' };
+  let firstLoad = { participations:false, customEvents:false, members:false };
+  let connected = false;
+
+  db.ref('.info/connected').on('value', snap => {
+    connected = snap.val();
+    if (connected) setSyncStatus('connected');
+    else setSyncStatus('error');
+  });
+
+  Object.entries(refs).forEach(([key, fbKey]) => {
+    db.ref(fbKey).on('value', snap => {
+      const val = snap.val();
+      S[key] = val ? (Array.isArray(val) ? val : Object.values(val)) : [];
+      if (!firstLoad[key]) { firstLoad[key] = true; }
+      if (Object.values(firstLoad).every(Boolean)) render();
+      else render();
+    });
+  });
+}
+
+async function fbSet(key, data) {
+  if (!db) { lsSave(key==='participations'?'bni_parts':key==='customEvents'?'bni_events':'bni_members', data); return; }
+  const fbKey = key==='participations'?'bni_parts':key==='customEvents'?'bni_events':'bni_members';
+  setSyncStatus('saving');
+  try {
+    await db.ref(fbKey).set(data);
+    setSyncStatus('connected');
+  } catch(e) {
+    setSyncStatus('error');
+    lsSave(fbKey, data); // fallback locale
+  }
+}
+
+// ── Inizializzazione ──────────────────────────────────
+if (firebaseReady) {
+  initFirebaseListeners();
+} else {
+  S.participations = lsLoad('bni_parts', []);
+  S.customEvents   = lsLoad('bni_events', []);
+  S.members        = lsLoad('bni_members', []);
+  render();
+}
+
+// ══════════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════════
+function dateToStr(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function today(){ return dateToStr(new Date()); }
+function fmtDate(s){ if(!s)return ''; return new Date(s+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'}); }
+function nextOcc(dayName){ const t=new Date(),target=DAY_NUM[dayName],cur=t.getDay(),diff=(target-cur+7)%7||7,d=new Date(t); d.setDate(t.getDate()+diff); return dateToStr(d); }
+function H(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ══════════════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════════════
+function render(){
+  const td=today();
+  document.getElementById('app').innerHTML=buildHero()+buildTabs()+`<div class="content">${buildContent(td)}</div>`+buildModal();
+}
+
+function buildHero(){
+  const ds=new Date().toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  return `<div class="hero">
+    <div>
+      <div class="hero-title">BNI Via del Sale</div>
+      <div class="hero-sub">Gestionale Capitoli Ibridi &amp; Partecipazioni</div>
+      <div class="hero-date">${H(ds)}</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">${CHAPTERS.length}</div>
+      <div class="hero-stat-label">capitoli attivi</div>
+      <div class="hero-sync">${firebaseReady ? '🔄 Sincronizzazione attiva' : '⚠️ Modalità locale'}</div>
+    </div>
+  </div>`;
+}
+
+function buildTabs(){
+  const tabs=[
+    {k:'capitoli',l:'Capitoli',n:CHAPTERS.length},
+    {k:'agenda',l:'Agenda',n:null},
+    {k:'mensile',l:'Calendario Mensile',n:null},
+    {k:'partecipazioni',l:'Partecipazioni',n:S.participations.length},
+    {k:'note',l:'Note',n:S.participations.filter(p=>p.note&&p.note.trim()).length},
+    {k:'eventi',l:'Eventi Custom',n:S.customEvents.length},
+    {k:'impostazioni',l:'Impostazioni',n:null},
+  ];
+  return `<div class="tabs">${tabs.map(t=>`
+    <button class="tab-btn${S.tab===t.k?' active':''}" onclick="setTab('${t.k}')">
+      ${t.l}${t.n!=null?`<span class="tab-badge">${t.n}</span>`:''}
+    </button>`).join('')}</div>`;
+}
+
+function buildContent(td){
+  if(S.tab==='capitoli')       return buildCapitoli();
+  if(S.tab==='agenda')         return buildAgenda(td);
+  if(S.tab==='mensile')        return buildMensile(td);
+  if(S.tab==='partecipazioni') return buildPartecipazioni(td);
+  if(S.tab==='note')           return buildNote();
+  if(S.tab==='eventi')         return buildEventi();
+  if(S.tab==='impostazioni')   return buildImpostazioni();
+  return '';
+}
+
+// ── CAPITOLI ──────────────────────────────────────────
+function buildCapitoli(){
+  const filtered=CHAPTERS.filter(c=>{
+    const ms=c.nome.toLowerCase().includes(S.search.toLowerCase())||c.città.toLowerCase().includes(S.search.toLowerCase());
+    return ms&&(S.fDay==='Tutti'||c.giorno===S.fDay)&&(S.fReg==='Tutte'||c.regione===S.fReg);
+  });
+  const dOpts=DAYS_ORDER.map(d=>`<option value="${d}"${S.fDay===d?'selected':''}>${d}</option>`).join('');
+  const rOpts=REGIONI.map(r=>`<option value="${r}"${S.fReg===r?'selected':''}>${H(r)}</option>`).join('');
+  const cards=filtered.map(c=>{
+    const dc=DAY_COL[c.giorno]||'#ccc',rc=REG_COL[c.regione]||'#999';
+    return `<div class="card" style="border-top:4px solid ${dc}">
+      <div class="card-title">${H(c.nome)}</div>
+      <div class="badges">
+        <span class="badge" style="background:${dc}22;color:${dc};font-weight:700">${c.giorno}</span>
+        <span class="badge" style="background:#f3f4f6;color:#555">🕐 ${c.orario}</span>
+        ${c.città?`<span class="badge" style="background:#f3f4f6;color:#555">📍 ${H(c.città)}</span>`:''}
+        <span class="badge" style="background:${rc}22;color:${rc}">${H(c.regione)}</span>
+      </div>
+      <div class="card-actions">
+        <button class="btn-grey" onclick="window.open('${H(c.url)}','_blank')">👥 Scheda Membri</button>
+        <button class="btn-blue" onclick="openReg('${c.id}')">Registrati</button>
+      </div>
+    </div>`;
+  }).join('');
+  return `
+    <div class="filter-bar">
+      <input type="text" placeholder="🔍 Cerca capitolo o città..." value="${H(S.search)}" oninput="S.search=this.value;render()">
+      <select onchange="S.fDay=this.value;render()"><option value="Tutti"${S.fDay==='Tutti'?'selected':''}>Tutti i giorni</option>${dOpts}</select>
+      <select onchange="S.fReg=this.value;render()"><option value="Tutte"${S.fReg==='Tutte'?'selected':''}>Tutte le regioni</option>${rOpts}</select>
+      <span style="color:#aaa;font-size:13px">${filtered.length} capitoli</span>
+    </div>
+    <div class="grid">${cards||'<p style="color:#aaa;padding:20px">Nessun capitolo trovato.</p>'}</div>`;
+}
+
+// ── AGENDA ────────────────────────────────────────────
+function buildAgenda(td){
+  const days=[];
+  for(let i=0;i<28;i++){
+    const d=new Date();d.setDate(d.getDate()+i);
+    const ds=dateToStr(d),dn=d.toLocaleDateString('it-IT',{weekday:'long'}),dayName=dn.charAt(0).toUpperCase()+dn.slice(1);
+    const chs=CHAPTERS.filter(c=>c.giorno===dayName);
+    const evs=S.customEvents.filter(e=>e.data===ds);
+    const pts=S.participations.filter(p=>p.date===ds);
+    if(chs.length||evs.length) days.push({ds,dayName,chs,evs,pts});
+  }
+  if(!days.length) return `<div class="empty"><div class="empty-icon">📅</div><p>Nessun evento nelle prossime 4 settimane.</p></div>`;
+  return `<p class="hint">Prossime 4 settimane — capitoli pianificati con partecipazioni registrate</p>`+
+  days.map(day=>{
+    const isT=day.ds===td;
+    const cRows=day.chs.map(c=>{
+      const myP=day.pts.find(p=>p.chapterId===c.id),dc=DAY_COL[c.giorno]||'#999';
+      return `<div class="agenda-row${myP?' reg':''}">
+        <span class="agenda-time" style="background:${dc}">${c.orario}</span>
+        <div style="flex:1;min-width:0"><div class="agenda-name">${H(c.nome)}</div>${c.città?`<div class="agenda-city">📍 ${H(c.città)}</div>`:''}</div>
+        ${myP?`<span style="font-size:13px;color:#cc0000;font-weight:700;flex-shrink:0">✅ ${H(myP.memberName)}</span>`:''}
+        <button class="btn-sm" onclick="window.open('${H(c.url)}','_blank')">👥</button>
+        <button class="btn-sm${myP?'':' btn-sm-blue'}" onclick="openReg('${c.id}')">Registrati</button>
+      </div>`;
+    }).join('');
+    const eRows=day.evs.map(e=>`
+      <div class="agenda-row evt">
+        <span class="agenda-time" style="background:#f97316">${e.orario||'--:--'}</span>
+        <div style="flex:1"><div class="agenda-name">⭐ ${H(e.nome)}</div>${e.città?`<div class="agenda-city">📍 ${H(e.città)}</div>`:''}${e.note?`<div style="font-size:12px;color:#777;font-style:italic">${H(e.note)}</div>`:''}</div>
+        ${e.url?`<button class="btn-sm" onclick="window.open('${H(e.url)}','_blank')">🔗</button>`:''}
+      </div>`).join('');
+    return `<div class="agenda-block">
+      <div class="agenda-hd ${isT?'today':'normal'}">
+        <span>${isT?'📍 OGGI — ':''}${H(fmtDate(day.ds))}</span>
+        <span style="font-size:13px;opacity:.75">${day.chs.length+day.evs.length} eventi · ${day.pts.length} iscritti</span>
+      </div>
+      <div class="agenda-body">${cRows}${eRows}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── MENSILE ───────────────────────────────────────────
+function buildMensile(td){
+  const dim=new Date(S.calYear,S.calMonth+1,0).getDate();
+  let firstWD=1,offset=0;
+  for(let d=1;d<=dim;d++){const wd=new Date(S.calYear,S.calMonth,d).getDay();if(wd>=1&&wd<=5){firstWD=d;offset=wd-1;break;}}
+  const cells=[];
+  for(let i=0;i<offset;i++) cells.push(null);
+  for(let d=firstWD;d<=dim;d++){
+    const date=new Date(S.calYear,S.calMonth,d),wd=date.getDay();
+    if(wd>=1&&wd<=5){
+      const ds=dateToStr(date),dayName=DAY_FROM_IDX[wd];
+      cells.push({dayNum:d,ds,dayName,chs:CHAPTERS.filter(c=>c.giorno===dayName),evs:S.customEvents.filter(e=>e.data===ds),pts:S.participations.filter(p=>p.date===ds),isToday:ds===td});
+    }
+  }
+  while(cells.length%5!==0) cells.push(null);
+  const hds=['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì'].map(d=>`<div class="cal-hd">${d}</div>`).join('');
+  const grid=cells.map(cell=>{
+    if(!cell) return `<div class="cal-cell empty"></div>`;
+    const hasAct=cell.pts.length>0||cell.evs.length>0;
+    const cls='cal-cell'+(cell.isToday?' today':hasAct?' active':'');
+    const parts=cell.pts.map(p=>`<div class="cal-part">👤 ${H(p.memberName)}</div><div class="cal-chapname">${H(p.chapterName.replace('BNI ','').split(' - ')[0])}</div>`).join('');
+    const dots=cell.chs.length?`<div class="cal-dots">${cell.chs.map(c=>`<span class="cal-dot" style="background:${DAY_COL[c.giorno]||'#ccc'}" title="${H(c.nome)}"></span>`).join('')}</div>`:'';
+    const evs=cell.evs.map(e=>`<div class="cal-evbadge">⭐ ${H(e.nome)}</div>`).join('');
+    return `<div class="${cls}" onclick="openDayDetail('${cell.ds}')"><div class="cal-day">${cell.dayNum}</div>${parts}${dots}${evs}</div>`;
+  }).join('');
+  let detail='';
+  if(S.calDayDetail){
+    const dc=cells.find(c=>c&&c.ds===S.calDayDetail);
+    if(dc){
+      const dPts=dc.pts.map(p=>`<div style="background:#eff6ff;border-radius:8px;padding:8px 12px;margin-bottom:7px;font-size:14px"><div style="font-weight:700">👤 ${H(p.memberName)}</div><div style="color:#555;font-size:13px">${H(p.chapterName)}</div><div style="color:#888;font-size:12px">🕐 ${p.orario}</div>${p.note?`<div style="margin-top:5px;padding:5px 8px;background:#fef3c7;border-radius:6px;font-size:12px;color:#92400e">📝 ${H(p.note)}</div>`:''}</div>`).join('');
+      const dChs=dc.chs.map(c=>`<div class="detail-chap"><span class="agenda-time" style="background:${DAY_COL[c.giorno]||'#999'};font-size:12px">${c.orario}</span><span class="detail-chap-name">${H(c.nome)}</span><button class="btn-sm" onclick="window.open('${H(c.url)}','_blank')">👥</button><button class="btn-sm btn-sm-blue" onclick="openReg('${c.id}');S.calDayDetail=null">Registrati</button></div>`).join('');
+      const dEvs=dc.evs.map(e=>`<div class="detail-event"><strong>${H(e.nome)}</strong>${e.orario?' · '+e.orario:''}${e.città?`<br><small>📍 ${H(e.città)}</small>`:''}${e.note?`<br><small style="color:#888;font-style:italic">${H(e.note)}</small>`:''}</div>`).join('');
+      detail=`<div style="background:white;border-radius:12px;padding:18px;margin-top:14px;box-shadow:0 1px 4px rgba(0,0,0,.1)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <strong style="font-size:15px">📅 ${H(fmtDate(S.calDayDetail))}</strong>
+          <button class="btn-sm" onclick="S.calDayDetail=null;render()">✕ Chiudi</button>
+        </div>
+        ${dc.pts.length?`<div class="detail-sec" style="color:#1d4ed8">✅ Partecipazioni</div>${dPts}`:''}
+        ${dc.chs.length?`<div class="detail-sec">Capitoli in agenda (${dc.chs.length})</div>${dChs}`:''}
+        ${dc.evs.length?`<div class="detail-sec" style="color:#f97316">⭐ Eventi custom</div>${dEvs}`:''}
+        ${!dc.pts.length&&!dc.chs.length&&!dc.evs.length?'<p style="color:#bbb;text-align:center;padding:20px">Nessun evento.</p>':''}
+      </div>`;
+    }
+  }
+  return `
+    <div class="cal-nav">
+      <button class="cal-nav-btn" onclick="calPrev()">‹</button>
+      <div class="cal-month">${MONTHS_IT[S.calMonth]} ${S.calYear}</div>
+      <button class="cal-nav-btn" onclick="calNext()">›</button>
+    </div>
+    <div class="cal-hd-row">${hds}</div>
+    <div class="cal-grid">${grid}</div>
+    <div class="cal-legend">
+      <span><span class="cal-dot" style="background:#1d4ed8;width:12px;height:12px;vertical-align:middle;margin-right:5px"></span>Partecipazione registrata</span>
+      <span><span class="cal-dot" style="background:#ef4444;width:12px;height:12px;vertical-align:middle;margin-right:5px"></span>Capitolo in agenda</span>
+      <span><span class="cal-dot" style="background:#f97316;width:12px;height:12px;vertical-align:middle;margin-right:5px"></span>Evento custom</span>
+    </div>${detail}`;
+}
+
+// ── PARTECIPAZIONI ────────────────────────────────────
+function buildPartecipazioni(td){
+  const up=S.participations.filter(p=>p.date>=td).sort((a,b)=>a.date.localeCompare(b.date));
+  const pa=S.participations.filter(p=>p.date<td).sort((a,b)=>b.date.localeCompare(a.date));
+  if(!S.participations.length) return `<div class="empty"><div class="empty-icon">📋</div><p>Nessuna partecipazione registrata.</p><p style="font-size:13px;margin-top:8px">Vai su "Capitoli" e clicca "Registrati".</p></div>`;
+  return `${up.length?`<div class="section-hd">Prossime (${up.length})</div>${up.map(p=>buildPCard(p,false)).join('')}`:''}${pa.length?`<div class="section-hd" style="color:#6b7280;margin-top:20px">Passate (${pa.length})</div>${pa.map(p=>buildPCard(p,true)).join('')}`:''}`;
+}
+function buildPCard(p,isPast){
+  const isConf=S.confirmDeleteId===p.id;
+  const delRow=isConf?`<div class="del-confirm"><span style="font-size:13px;color:#b91c1c;font-weight:600;flex:1">Sei sicuro?</span><button class="btn-cancel-del" onclick="S.confirmDeleteId=null;render()">Annulla</button><button class="btn-ok-del" onclick="delPart('${p.id}')">Sì, cancella</button></div>`:
+    `<button class="btn-del" onclick="S.confirmDeleteId='${p.id}';render()">🗑️ ${isPast?'Elimina partecipazione':'Cancella la mia iscrizione'}</button>`;
+  const cited=p.citedMember?`<span class="badge-cited">⚠️ ${H(p.citedMember)}</span>`:'';
+  return `<div class="pcard${isPast?' past':''}">
+    <div class="pcard-top">
+      <div class="pcard-info">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+          <div style="font-weight:700;font-size:15px">${H(p.chapterName)}</div>
+          <span class="badge-member">👤 ${H(p.memberName)}</span>${cited}
+        </div>
+        <div style="font-size:13px;color:#666;margin-top:3px">📅 ${H(fmtDate(p.date))} &nbsp;🕐 ${p.orario}</div>
+        ${p.città?`<div style="font-size:12px;color:#aaa">📍 ${H(p.città)}</div>`:''}
+        ${p.note?`<div class="pcard-note-box">📝 ${H(p.note)}</div>`:''}
+      </div>
+      <div class="pcard-icons">
+        <button class="btn-sm" onclick="window.open('${H(p.url)}','_blank')">👥</button>
+        <button class="btn-sm" onclick="openNote('${p.id}')">📝</button>
+      </div>
+    </div>
+    <div class="pcard-del-row">${delRow}</div>
+  </div>`;
+}
+
+// ── NOTE ──────────────────────────────────────────────
+function buildNote(){
+  const withNotes=S.participations.filter(p=>p.note&&p.note.trim()).sort((a,b)=>b.date.localeCompare(a.date));
+  if(!withNotes.length) return `<div class="empty"><div class="empty-icon">📒</div><p>Nessuna nota ancora.</p></div>`;
+  return `<p class="hint">Tutte le note e gli appunti lasciati dopo le partecipazioni</p>`+withNotes.map(p=>{
+    const cited=p.citedMember?`<span class="badge-cited">⚠️ ${H(p.citedMember)}</span>`:'';
+    return `<div class="note-card">
+      <div class="note-card-hd">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+            <div class="note-card-title">${H(p.chapterName)}</div>
+            <span class="badge-member">👤 ${H(p.memberName)}</span>${cited}
+          </div>
+          <div style="font-size:13px;color:#666;margin-top:3px">📅 ${H(fmtDate(p.date))} · 🕐 ${p.orario}${p.città?' · 📍 '+H(p.città):''}</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0;margin-left:12px">
+          <button class="btn-sm" onclick="window.open('${H(p.url)}','_blank')">👥</button>
+          <button class="btn-sm" style="background:#fef3c7" onclick="openNote('${p.id}')">✏️</button>
+        </div>
+      </div>
+      <div class="note-body">📝 ${H(p.note)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── EVENTI ────────────────────────────────────────────
+function buildEventi(){
+  const sorted=[...S.customEvents].sort((a,b)=>a.data.localeCompare(b.data));
+  const cards=sorted.length?`<div class="grid">${sorted.map(e=>`
+    <div class="evcard">
+      <div style="font-weight:700;font-size:15px;margin-bottom:5px">⭐ ${H(e.nome)}</div>
+      <div style="font-size:14px;color:#666;margin-bottom:3px">📅 ${H(fmtDate(e.data))}${e.orario?' · 🕐 '+e.orario:''}</div>
+      ${e.città?`<div style="font-size:13px;color:#888;margin-bottom:3px">📍 ${H(e.città)}</div>`:''}
+      ${e.note?`<div style="font-size:13px;color:#999;font-style:italic;margin-bottom:6px">${H(e.note)}</div>`:''}
+      <div class="evcard-actions">
+        ${e.url?`<button class="btn-ev-link" onclick="window.open('${H(e.url)}','_blank')">🔗 Link</button>`:''}
+        <button class="btn-ev-del" onclick="delEvt('${e.id}')">🗑️ Elimina</button>
+      </div>
+    </div>`).join('')}</div>`:
+    `<div class="empty"><div class="empty-icon">⭐</div><p>Nessun evento custom.</p></div>`;
+  return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div class="section-hd" style="margin:0">Eventi Congiunti &amp; Custom</div><button class="btn-red" onclick="S.showEvt=true;render()">➕ Aggiungi Evento</button></div>${cards}`;
+}
+
+// ── IMPOSTAZIONI ──────────────────────────────────────
+function buildImpostazioni(){
+  const tags=S.members.length?S.members.map(m=>`<span class="member-tag">👤 ${H(m)}<button class="member-del-btn" onclick="delMember('${H(m)}')">×</button></span>`).join(''):`<p style="color:#bbb;font-size:13px">Nessun membro aggiunto.</p>`;
+  return `<div class="settings-card">
+    <div style="font-size:16px;font-weight:700;margin-bottom:8px">Membri Via del Sale</div>
+    <div style="color:#777;font-size:14px;margin-bottom:14px">Aggiungi i nomi dei membri per la selezione rapida e per citarli nelle note.</div>
+    <div style="display:flex;gap:8px"><input id="newMemberInput" type="text" class="fi" style="flex:1" placeholder="Nome e Cognome" onkeydown="if(event.key==='Enter')addMember()"><button class="btn-red" onclick="addMember()">Aggiungi</button></div>
+    <div class="member-tags">${tags}</div>
+  </div>`;
+}
+
+// ── MODALI ────────────────────────────────────────────
+function buildModal(){
+  if(S.showReg&&S.selChap) return buildModalReg();
+  if(S.showNote&&S.selPart) return buildModalNote();
+  if(S.showEvt)             return buildModalEvt();
+  return '';
+}
+function buildModalReg(){
+  const c=S.selChap;
+  const memOpts=S.members.length?S.members.map(m=>`<option value="${H(m)}">${H(m)}</option>`).join(''):'';
+  const selField=S.members.length?`<label class="fl">Membro Via del Sale *</label><select id="regMember" class="fi">${memOpts}<option value="">— Inserisci manualmente —</option></select><input id="regMemberManual" type="text" class="fi" style="margin-top:8px;display:none" placeholder="Nome e Cognome"><script>document.getElementById('regMember').addEventListener('change',function(){document.getElementById('regMemberManual').style.display=this.value===''?'block':'none'});<\/script>`:
+    `<label class="fl">Membro Via del Sale *</label><input id="regMember" type="text" class="fi" placeholder="Nome e Cognome">`;
+  return `<div class="modal-overlay" onclick="if(event.target.classList.contains('modal-overlay')){S.showReg=false;render()}">
+    <div class="modal-box">
+      <div class="modal-hd"><div class="modal-title">Registrati alla visita</div><button class="modal-close" onclick="S.showReg=false;render()">×</button></div>
+      <div class="modal-chap-info">${H(c.nome)}<br><span style="color:#666;font-weight:400">${c.giorno} · ${c.orario}${c.città?' · '+c.città:''}</span></div>
+      ${selField}
+      <label class="fl">Data dell'evento *</label>
+      <input id="regDate" type="date" class="fi" value="${nextOcc(c.giorno)}">
+      <label class="fl">Note (opzionale)</label>
+      <textarea id="regNote" class="fi"></textarea>
+      <div class="modal-actions">
+        <button class="btn-ma-cancel" onclick="S.showReg=false;render()">Annulla</button>
+        <button class="btn-ma-ok blue" onclick="submitReg()">Conferma</button>
+      </div>
+    </div>
+  </div>`;
+}
+function buildModalNote(){
+  const p=S.selPart;
+  const memOpts=S.members.length?`<option value="">-- Nessuno --</option>`+S.members.map(m=>`<option value="${H(m)}"${p.citedMember===m?'selected':''}>${H(m)}</option>`).join(''):`<option value="">-- Nessun membro nelle impostazioni --</option>`;
+  return `<div class="modal-overlay" onclick="if(event.target.classList.contains('modal-overlay')){S.showNote=false;render()}">
+    <div class="modal-box">
+      <div class="modal-hd"><div class="modal-title">📝 Note / Appunti post-evento</div><button class="modal-close" onclick="S.showNote=false;render()">×</button></div>
+      <div style="background:#f9fafb;border-radius:8px;padding:9px 13px;margin-bottom:14px;font-size:14px;color:#555"><strong>${H(p.chapterName)}</strong><br>${H(fmtDate(p.date))} · 👤 ${H(p.memberName)}</div>
+      <label class="fl" style="margin-top:0">Note / Appunti</label>
+      <textarea id="noteText" class="fi" style="height:130px" placeholder="Impressioni, referral ricevuti, follow-up, contatti interessanti...">${H(p.note||'')}</textarea>
+      <label class="fl">⚠️ Cita un membro Via del Sale <span style="font-weight:400;color:#888;font-size:12px">(opzionale)</span></label>
+      <select id="citedMember" class="fi" style="border-color:#ea580c">${memOpts}</select>
+      <div class="modal-actions">
+        <button class="btn-ma-cancel" onclick="S.showNote=false;render()">Annulla</button>
+        <button class="btn-ma-ok red" onclick="saveNote()">Salva Note</button>
+      </div>
+    </div>
+  </div>`;
+}
+function buildModalEvt(){
+  return `<div class="modal-overlay" onclick="if(event.target.classList.contains('modal-overlay')){S.showEvt=false;render()}">
+    <div class="modal-box">
+      <div class="modal-hd"><div class="modal-title">⭐ Aggiungi Evento Custom</div><button class="modal-close" onclick="S.showEvt=false;render()">×</button></div>
+      <label class="fl" style="margin-top:0">Nome evento *</label><input id="evNome" type="text" class="fi" placeholder="Es. Evento Congiunto BNI">
+      <label class="fl">Città / Luogo</label><input id="evCittà" type="text" class="fi" placeholder="Es. Genova">
+      <div class="form-row" style="margin-top:12px">
+        <div><label class="fl" style="margin-top:0">Data *</label><input id="evData" type="date" class="fi"></div>
+        <div><label class="fl" style="margin-top:0">Orario</label><input id="evOrario" type="time" class="fi"></div>
+      </div>
+      <label class="fl">Link (opzionale)</label><input id="evUrl" type="text" class="fi" placeholder="https://...">
+      <label class="fl">Descrizione / Note</label><textarea id="evNote" class="fi"></textarea>
+      <div class="modal-actions">
+        <button class="btn-ma-cancel" onclick="S.showEvt=false;render()">Annulla</button>
+        <button class="btn-ma-ok red" onclick="addEvt()">Aggiungi</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+//  AZIONI
+// ══════════════════════════════════════════════════════
+function setTab(t){S.tab=t;S.confirmDeleteId=null;render();}
+function openReg(id){S.selChap=CHAPTERS.find(c=>c.id===id);S.showReg=true;render();}
+function submitReg(){
+  const selEl=document.getElementById('regMember'),manEl=document.getElementById('regMemberManual');
+  let memberName=selEl&&selEl.tagName==='SELECT'?(selEl.value===''&&manEl?manEl.value.trim():selEl.value):(selEl?selEl.value.trim():'');
+  const date=document.getElementById('regDate').value,note=document.getElementById('regNote').value.trim();
+  if(!memberName||!date){alert('Inserisci nome e data.');return;}
+  const c=S.selChap;
+  const newParts=[...S.participations,{id:Date.now().toString(),chapterId:c.id,chapterName:c.nome,città:c.città,giorno:c.giorno,orario:c.orario,url:c.url,memberName,date,note,citedMember:'',ts:Date.now()}];
+  S.participations=newParts;
+  fbSet('participations',newParts);
+  S.showReg=false;S.tab='partecipazioni';render();
+}
+function openNote(id){S.selPart=S.participations.find(p=>p.id===id);S.showNote=true;render();}
+function saveNote(){
+  const txt=document.getElementById('noteText').value.trim();
+  const cited=(document.getElementById('citedMember')?.value||'').trim();
+  const newParts=S.participations.map(p=>p.id===S.selPart.id?{...p,note:txt,citedMember:cited}:p);
+  S.participations=newParts;fbSet('participations',newParts);
+  S.showNote=false;render();
+}
+function delPart(id){
+  const newParts=S.participations.filter(p=>p.id!==id);
+  S.participations=newParts;S.confirmDeleteId=null;fbSet('participations',newParts);render();
+}
+function delEvt(id){
+  const newEvts=S.customEvents.filter(e=>e.id!==id);
+  S.customEvents=newEvts;fbSet('customEvents',newEvts);render();
+}
+function addEvt(){
+  const nome=document.getElementById('evNome').value.trim(),data=document.getElementById('evData').value;
+  if(!nome||!data){alert('Inserisci nome e data.');return;}
+  const newEvts=[...S.customEvents,{id:Date.now().toString(),nome,città:document.getElementById('evCittà').value.trim(),data,orario:document.getElementById('evOrario').value,url:document.getElementById('evUrl').value.trim(),note:document.getElementById('evNote').value.trim()}];
+  S.customEvents=newEvts;fbSet('customEvents',newEvts);S.showEvt=false;render();
+}
+function addMember(){
+  const inp=document.getElementById('newMemberInput');
+  if(!inp||!inp.value.trim())return;
+  if(S.members.includes(inp.value.trim())){alert('Membro già presente.');return;}
+  const newMems=[...S.members,inp.value.trim()];
+  S.members=newMems;fbSet('members',newMems);render();
+}
+function delMember(name){
+  const newMems=S.members.filter(m=>m!==name);
+  S.members=newMems;fbSet('members',newMems);render();
+}
+function calPrev(){if(S.calMonth===0){S.calMonth=11;S.calYear--;}else S.calMonth--;render();}
+function calNext(){if(S.calMonth===11){S.calMonth=0;S.calYear++;}else S.calMonth++;render();}
+function openDayDetail(ds){S.calDayDetail=S.calDayDetail===ds?null:ds;render();}
+
+}); // fine window.onload
+</script>
+</body>
+</html>
