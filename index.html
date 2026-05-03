@@ -4,49 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>BNI Via del Sale — Gestionale</title>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     CONFIGURAZIONE FIREBASE
-     ─────────────────────────────────────────────────────────────
-     1. Vai su https://console.firebase.google.com
-     2. Crea un nuovo progetto (es. "bni-via-del-sale")
-     3. Vai su "Realtime Database" → Crea database → modalità test
-     4. Vai su Impostazioni progetto → Le tue app → Aggiungi app web
-     5. Copia i valori e incollali qui sotto
-     ═══════════════════════════════════════════════════════════════ -->
-<!-- Firebase SDK - caricati prima di tutto -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-<script>
-  const FIREBASE_CONFIG = {
-    apiKey:            "AIzaSyB8vOn6eUE7_MZAkAJUuOShs7Yotq-eQjA",
-    authDomain:        "bni-project-b5103.firebaseapp.com",
-    databaseURL:       "https://bni-project-b5103-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId:         "bni-project-b5103",
-    storageBucket:     "bni-project-b5103.firebasestorage.app",
-    messagingSenderId: "566546435860",
-    appId:             "1:566546435860:web:f91fad2aae1caa223c7c01",
-    measurementId:     "G-BMYVTY8ZMR"
-  };
-</script>
-
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f4f5f7;min-height:100vh}
 button{font-family:inherit;cursor:pointer}
 input,select,textarea{font-family:inherit}
-
-/* ── SETUP BANNER ── */
-#setup-banner{background:#1e40af;color:white;padding:12px 20px;font-size:13px;text-align:center;line-height:1.6;display:none}
-#setup-banner a{color:#93c5fd;font-weight:700}
-#setup-banner.visible{display:block}
-
-/* ── SYNC INDICATOR ── */
-#sync-bar{background:#065f46;color:white;font-size:12px;padding:4px 16px;display:flex;align-items:center;gap:8px;min-height:24px}
+#sync-bar{background:#065f46;color:white;font-size:12px;padding:5px 16px;display:flex;align-items:center;gap:8px;min-height:26px}
 #sync-bar.error{background:#7f1d1d}
 #sync-dot{width:8px;height:8px;border-radius:50%;background:#34d399;flex-shrink:0}
 #sync-bar.error #sync-dot{background:#f87171}
-
 .hero{background:linear-gradient(135deg,#cc0000,#990000);color:white;padding:32px 28px;display:flex;align-items:center;gap:20px;box-shadow:0 4px 16px rgba(0,0,0,.3)}
 .hero-title{font-weight:900;font-size:28px;line-height:1.1}
 .hero-sub{font-size:15px;opacity:.88;margin-top:5px}
@@ -55,20 +23,16 @@ input,select,textarea{font-family:inherit}
 .hero-stat-num{font-size:30px;font-weight:900;opacity:.9}
 .hero-stat-label{font-size:12px;opacity:.7}
 .hero-sync{margin-top:6px;font-size:11px;opacity:.65;background:rgba(255,255,255,.15);border-radius:6px;padding:3px 8px}
-
 .tabs{background:#eef2f7;border-bottom:2px solid #d0daea;display:flex;overflow-x:auto;padding:0 6px;position:sticky;top:0;z-index:100;box-shadow:0 2px 6px rgba(0,0,0,.08)}
-.tab-btn{padding:13px 15px;background:transparent;color:#4a5568;border:none;border-bottom:3px solid transparent;font-weight:700;font-size:14px;white-space:nowrap;transition:all .2s;letter-spacing:.2px}
-.tab-btn:hover{background:#dde6f0;color:#1a202c}
+.tab-btn{padding:13px 15px;background:transparent;color:#4a5568;border:none;border-bottom:3px solid transparent;font-weight:700;font-size:14px;white-space:nowrap;transition:all .2s}
+.tab-btn:hover{background:#dde6f0}
 .tab-btn.active{background:#cc0000;color:white;border-bottom-color:#cc0000}
 .tab-badge{background:rgba(0,0,0,.12);border-radius:10px;padding:1px 6px;font-size:11px;margin-left:3px}
 .tab-btn.active .tab-badge{background:rgba(255,255,255,.28)}
-
 .content{padding:14px;max-width:1300px;margin:0 auto}
-
 .filter-bar{background:white;border-radius:12px;padding:14px;margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.08)}
 .filter-bar input,.filter-bar select{padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px}
 .filter-bar input{flex:1;min-width:180px}
-
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(295px,1fr));gap:12px}
 .card{background:white;border-radius:12px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
 .card-title{font-weight:700;font-size:15px;margin-bottom:10px;line-height:1.35}
@@ -76,16 +40,10 @@ input,select,textarea{font-family:inherit}
 .badge{padding:3px 10px;border-radius:12px;font-size:13px}
 .card-actions{display:flex;gap:8px}
 .btn-grey{flex:1;padding:9px 0;background:#f3f4f6;color:#333;border:none;border-radius:8px;font-size:14px;font-weight:600}
-.btn-grey:hover{background:#e5e7eb}
 .btn-blue{flex:1;padding:9px 0;background:#1d4ed8;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600}
-.btn-blue:hover{background:#1e40af}
 .btn-red{background:#cc0000;color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;padding:9px 18px}
-.btn-red:hover{background:#aa0000}
 .btn-sm{padding:5px 10px;background:#f3f4f6;border:none;border-radius:6px;font-size:13px}
-.btn-sm:hover{background:#e5e7eb}
 .btn-sm-blue{background:#1d4ed8;color:white;font-weight:600}
-.btn-sm-blue:hover{background:#1e40af}
-
 .agenda-block{background:white;border-radius:12px;margin-bottom:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)}
 .agenda-hd{color:white;padding:11px 18px;font-weight:700;font-size:15px;display:flex;justify-content:space-between}
 .agenda-hd.today{background:#cc0000}.agenda-hd.normal{background:#1f2937}
@@ -96,15 +54,13 @@ input,select,textarea{font-family:inherit}
 .agenda-time{color:white;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:700;flex-shrink:0}
 .agenda-name{font-weight:600;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
 .agenda-city{font-size:13px;color:#aaa}
-
 .cal-nav{display:flex;align-items:center;justify-content:space-between;background:white;border-radius:12px;padding:14px 20px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
 .cal-nav-btn{padding:8px 18px;background:#f3f4f6;border:none;border-radius:8px;font-size:18px;font-weight:700}
-.cal-nav-btn:hover{background:#e5e7eb}
 .cal-month{font-weight:800;font-size:20px;color:#1f2937}
 .cal-hd-row{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:5px}
 .cal-hd{text-align:center;font-weight:800;font-size:14px;color:#374151;padding:9px 0;background:white;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
 .cal-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
-.cal-cell{min-height:130px;background:white;border-radius:10px;padding:10px 11px;border:1px solid #e5e7eb;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.07);transition:box-shadow .15s}
+.cal-cell{min-height:130px;background:white;border-radius:10px;padding:10px 11px;border:1px solid #e5e7eb;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.07)}
 .cal-cell:hover{box-shadow:0 3px 10px rgba(0,0,0,.12)}
 .cal-cell.today{background:#fff1f1;border:2px solid #cc0000}
 .cal-cell.active{background:#eff6ff;border:2px solid #93c5fd}
@@ -117,37 +73,29 @@ input,select,textarea{font-family:inherit}
 .cal-dot{width:9px;height:9px;border-radius:50%;display:inline-block}
 .cal-evbadge{background:#f97316;color:white;border-radius:6px;padding:4px 8px;font-size:12px;font-weight:700;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cal-legend{margin-top:14px;display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:#666;align-items:center}
-
 .pcard{background:white;border-radius:12px;padding:16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.1);border-left:4px solid #cc0000}
 .pcard.past{border-left-color:#9ca3af;opacity:.85}
 .pcard-top{display:flex;gap:12px;align-items:flex-start}
-.pcard-info{flex:1}
 .pcard-note-box{margin-top:7px;padding:7px 10px;background:#fef3c7;border-radius:8px;font-size:13px;color:#92400e}
 .pcard-icons{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
 .pcard-del-row{margin-top:12px;border-top:1px solid #f3f4f6;padding-top:10px}
 .btn-del{width:100%;padding:8px 0;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;border-radius:8px;font-size:13px;font-weight:700}
-.btn-del:hover{background:#fecaca}
 .del-confirm{display:flex;gap:8px;align-items:center}
 .btn-cancel-del{padding:7px 14px;background:#f3f4f6;border:none;border-radius:8px;font-size:13px;font-weight:600}
 .btn-ok-del{padding:7px 14px;background:#b91c1c;color:white;border:none;border-radius:8px;font-size:13px;font-weight:700}
-
 .note-card{background:white;border-radius:12px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:5px solid #f59e0b}
 .note-card-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
-.note-card-title{font-weight:700;font-size:16px}
 .note-body{background:#fef3c7;border-radius:10px;padding:12px 14px;font-size:15px;color:#78350f;line-height:1.6}
 .badge-member{background:#1d4ed8;color:white;border-radius:12px;padding:3px 11px;font-size:13px;font-weight:700;white-space:nowrap;flex-shrink:0}
 .badge-cited{background:#ea580c;color:white;border-radius:12px;padding:3px 11px;font-size:13px;font-weight:700;white-space:nowrap;flex-shrink:0}
-
 .evcard{background:white;border-radius:12px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-top:4px solid #f97316}
 .evcard-actions{display:flex;gap:7px;margin-top:10px}
 .btn-ev-link{flex:1;padding:7px 0;background:#f3f4f6;border:none;border-radius:8px;font-size:13px}
 .btn-ev-del{flex:1;padding:7px 0;background:#fee2e2;color:#cc0000;border:none;border-radius:8px;font-size:13px;font-weight:600}
-
 .settings-card{background:white;border-radius:12px;padding:22px;box-shadow:0 1px 4px rgba(0,0,0,.08);max-width:520px}
 .member-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .member-tag{background:#f3f4f6;padding:7px 13px;border-radius:20px;font-size:14px;display:flex;align-items:center;gap:8px}
 .member-del-btn{background:none;border:none;color:#cc0000;cursor:pointer;font-size:18px;line-height:1;padding:0}
-
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px}
 .modal-box{background:white;border-radius:16px;padding:24px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto}
 .modal-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
@@ -164,8 +112,6 @@ textarea.fi{height:80px;resize:vertical}
 .btn-ma-cancel{flex:1;padding:11px;background:#f3f4f6;border:none;border-radius:8px;font-size:14px}
 .btn-ma-ok{flex:1;padding:11px;color:white;border:none;border-radius:8px;font-size:14px;font-weight:700}
 .btn-ma-ok.red{background:#cc0000}.btn-ma-ok.blue{background:#1d4ed8}
-
-.detail-sec{font-weight:700;font-size:14px;margin:10px 0 8px}
 .detail-chap{display:flex;align-items:center;gap:8px;padding:7px 10px;background:#f9fafb;border-radius:8px;margin-bottom:6px;border:1px solid #e5e7eb}
 .detail-chap-name{flex:1;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .detail-event{padding:8px 12px;background:#fff7ed;border-radius:8px;margin-bottom:6px;border:1px solid #fed7aa}
@@ -173,31 +119,14 @@ textarea.fi{height:80px;resize:vertical}
 .empty-icon{font-size:48px;margin-bottom:12px}
 .section-hd{font-size:16px;font-weight:700;margin-bottom:10px}
 .hint{color:#888;font-size:14px;margin-bottom:10px}
-.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
-@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
-
-<!-- Banner setup (visibile se Firebase non configurato) -->
-<div id="setup-banner">
-  ⚠️ <strong>Firebase non configurato.</strong> I dati vengono salvati solo localmente su questo PC.
-  Leggi le istruzioni nel codice sorgente per abilitare la sincronizzazione multi-utente.
-  <a href="https://console.firebase.google.com" target="_blank">Apri Firebase Console →</a>
-</div>
-
-<!-- Barra stato sincronizzazione -->
-<div id="sync-bar">
-  <div id="sync-dot"></div>
-  <span id="sync-msg">Connessione in corso...</span>
-</div>
-
-<div id="app"></div>
+<div id="sync-bar"><div id="sync-dot"></div><span id="sync-msg">Avvio in corso...</span></div>
+<div id="app"><div style="text-align:center;padding:60px;color:#888"><p style="font-size:18px">Caricamento...</p></div></div>
 
 <script>
-// ══════════════════════════════════════════════════════
-//  DATI CAPITOLI
-// ══════════════════════════════════════════════════════
+// ══ DATI CAPITOLI ═════════════════════════════════════
 const CHAPTERS=[
  {id:"c1",nome:"BNI Ambizioso AL - 15 Alessandria",città:"Alessandria",regione:"Piemonte",giorno:"Venerdì",orario:"13:30",url:"https://bni-italia.com/it/chapterdetail?chapterId=7apLsSgi3RBxpUCG7cKOaw%3D%3D&name=BNI+BNI+Ambizioso+AL"},
  {id:"c2",nome:"BNI Ambizioso CN - 14 Piemonte Sud",città:"Cuneo",regione:"Piemonte",giorno:"Giovedì",orario:"12:30",url:"https://bni-italia.com/it/chapterdetail?chapterId=qxBg0SsYsV%2Fm7zJl%2FFkD%2Fw%3D%3D&name=BNI+BNI+Ambizioso+CN"},
@@ -255,7 +184,6 @@ const CHAPTERS=[
  {id:"c54",nome:"BNI Teodora - 52 Romagna",città:"Ravenna",regione:"Emilia Romagna",giorno:"Mercoledì",orario:"18:45",url:"https://bni-italia.com/it/chapterdetail?chapterId=80TYKmHJRDyJOjZq6q6%2FdQ%3D%3D&name=BNI+BNI+Teodora"},
  {id:"c55",nome:"BNI Terre Dei Castelli - 41 Modena-Mantova",città:"Spilamberto (MO)",regione:"Emilia Romagna",giorno:"Mercoledì",orario:"07:00",url:"https://bni-italia.com/it/chapterdetail?chapterId=HcGNg6RWVpBD1zwcVaTqsA%3D%3D&name=BNI+BNI+Terre+Dei+Castelli"}
 ];
-
 const DAY_COL={"Lunedì":"#6366f1","Martedì":"#f59e0b","Mercoledì":"#10b981","Giovedì":"#3b82f6","Venerdì":"#ef4444"};
 const REG_COL={"Piemonte":"#8b5cf6","Liguria":"#06b6d4","Veneto":"#f97316","Toscana":"#84cc16","Lombardia":"#ec4899","Emilia Romagna":"#14b8a6"};
 const REGIONI=[...new Set(CHAPTERS.map(c=>c.regione))].sort();
@@ -264,145 +192,118 @@ const MONTHS_IT=["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio
 const DAY_FROM_IDX=["Domenica","Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato"];
 const DAY_NUM={"Lunedì":1,"Martedì":2,"Mercoledì":3,"Giovedì":4,"Venerdì":5};
 
-// ══════════════════════════════════════════════════════
-//  FIREBASE SETUP
-// ══════════════════════════════════════════════════════
-window.addEventListener('load', function() {
-
-let db = null;
-const firebaseReady = typeof firebase !== 'undefined' && FIREBASE_CONFIG.apiKey && !FIREBASE_CONFIG.apiKey.includes('INCOLLA_QUI');
-
-if (firebaseReady) {
-  firebase.initializeApp(FIREBASE_CONFIG);
-  db = firebase.database();
-  setSyncStatus('connecting');
-} else {
-  document.getElementById('setup-banner').classList.add('visible');
-  setSyncStatus('local');
-}
-
-function setSyncStatus(state, extra) {
-  const bar = document.getElementById('sync-bar');
-  const dot = document.getElementById('sync-dot');
-  const msg = document.getElementById('sync-msg');
-  bar.className = state === 'error' ? 'error' : '';
-  dot.style.background = state === 'connected' ? '#34d399' : state === 'local' ? '#fbbf24' : state === 'error' ? '#f87171' : '#93c5fd';
-  const labels = { connected:'Sincronizzato con Firebase — modifiche visibili a tutti in tempo reale', local:'Modalità locale — dati salvati solo su questo PC (configura Firebase per la sincronizzazione)', connecting:'Connessione a Firebase in corso...', saving:'Salvataggio in corso...', error:'Errore di connessione — ricarica la pagina' };
-  msg.textContent = (labels[state] || state) + (extra ? ' · ' + extra : '');
-}
-
-// ══════════════════════════════════════════════════════
-//  STATE
-// ══════════════════════════════════════════════════════
-let S = {
-  tab:'capitoli', search:'', fDay:'Tutti', fReg:'Tutte',
-  participations: [], customEvents: [], members: [],
-  calYear: new Date().getFullYear(), calMonth: new Date().getMonth(),
-  calDayDetail: null,
-  showReg:false, selChap:null,
-  showNote:false, selPart:null,
-  showEvt:false, confirmDeleteId:null,
+// ══ STATE GLOBALE ═════════════════════════════════════
+var db=null, firebaseReady=false;
+var S={
+  tab:'capitoli',search:'',fDay:'Tutti',fReg:'Tutte',
+  participations:[],customEvents:[],members:[],
+  calYear:new Date().getFullYear(),calMonth:new Date().getMonth(),
+  calDayDetail:null,showReg:false,selChap:null,
+  showNote:false,selPart:null,showEvt:false,confirmDeleteId:null
 };
 
-// ── Fallback localStorage se Firebase non configurato ──
-function lsLoad(k,def){ try{return JSON.parse(localStorage.getItem(k)||'null')||def;}catch(e){return def;} }
-function lsSave(k,v){ localStorage.setItem(k,JSON.stringify(v)); }
-
-// ── Firebase listeners (real-time) ────────────────────
-function initFirebaseListeners() {
-  const refs = { participations:'bni_parts', customEvents:'bni_events', members:'bni_members' };
-  let firstLoad = { participations:false, customEvents:false, members:false };
-  let connected = false;
-
-  db.ref('.info/connected').on('value', snap => {
-    connected = snap.val();
-    if (connected) setSyncStatus('connected');
-    else setSyncStatus('error');
-  });
-
-  Object.entries(refs).forEach(([key, fbKey]) => {
-    db.ref(fbKey).on('value', snap => {
-      const val = snap.val();
-      S[key] = val ? (Array.isArray(val) ? val : Object.values(val)) : [];
-      if (!firstLoad[key]) { firstLoad[key] = true; }
-      if (Object.values(firstLoad).every(Boolean)) render();
-      else render();
-    });
-  });
+// ══ HELPERS ═══════════════════════════════════════════
+function dateToStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function today(){return dateToStr(new Date());}
+function fmtDate(s){if(!s)return '';return new Date(s+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
+function nextOcc(dn){var t=new Date(),tg=DAY_NUM[dn],cur=t.getDay(),diff=(tg-cur+7)%7||7,d=new Date(t);d.setDate(t.getDate()+diff);return dateToStr(d);}
+function H(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function setSyncStatus(state){
+  var bar=document.getElementById('sync-bar'),dot=document.getElementById('sync-dot'),msg=document.getElementById('sync-msg');
+  if(!bar)return;
+  bar.className=state==='error'?'error':'';
+  dot.style.background=state==='connected'?'#34d399':state==='local'?'#fbbf24':state==='error'?'#f87171':'#93c5fd';
+  var labels={connected:'Sincronizzato con Firebase — modifiche visibili a tutti in tempo reale',local:'Modalità locale — configura Firebase per la sincronizzazione',connecting:'Connessione a Firebase in corso...',saving:'Salvataggio...',error:'Errore connessione Firebase'};
+  msg.textContent=labels[state]||state;
 }
+function lsLoad(k,def){try{return JSON.parse(localStorage.getItem(k)||'null')||def;}catch(e){return def;}}
+function lsSave(k,v){localStorage.setItem(k,JSON.stringify(v));}
 
-async function fbSet(key, data) {
-  if (!db) { lsSave(key==='participations'?'bni_parts':key==='customEvents'?'bni_events':'bni_members', data); return; }
-  const fbKey = key==='participations'?'bni_parts':key==='customEvents'?'bni_events':'bni_members';
-  setSyncStatus('saving');
-  try {
-    await db.ref(fbKey).set(data);
-    setSyncStatus('connected');
-  } catch(e) {
-    setSyncStatus('error');
-    lsSave(fbKey, data); // fallback locale
+// ══ FIREBASE ══════════════════════════════════════════
+function initFirebase(){
+  var cfg={
+    apiKey:"AIzaSyB8vOn6eUE7_MZAkAJUuOShs7Yotq-eQjA",
+    authDomain:"bni-project-b5103.firebaseapp.com",
+    databaseURL:"https://bni-project-b5103-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId:"bni-project-b5103",
+    storageBucket:"bni-project-b5103.firebasestorage.app",
+    messagingSenderId:"566546435860",
+    appId:"1:566546435860:web:f91fad2aae1caa223c7c01"
+  };
+  try{
+    // Evita errore "app already exists" su reload
+    var app;
+    if(firebase.apps && firebase.apps.length){
+      app=firebase.apps[0];
+    } else {
+      app=firebase.initializeApp(cfg);
+    }
+    db=firebase.database(app);
+    firebaseReady=true;
+    setSyncStatus('connecting');
+    db.ref('.info/connected').on('value',function(snap){
+      setSyncStatus(snap.val()?'connected':'error');
+    });
+    var keys={participations:'bni_parts',customEvents:'bni_events',members:'bni_members'};
+    var loaded={};
+    Object.keys(keys).forEach(function(key){
+      db.ref(keys[key]).on('value',function(snap){
+        var val=snap.val();
+        S[key]=val?(Array.isArray(val)?val:Object.values(val)):[];
+        loaded[key]=true;
+        if(Object.keys(loaded).length===3) render();
+        else render();
+      },function(err){
+        console.error('Firebase read error:',err);
+        loadLocal();
+      });
+    });
+  }catch(e){
+    console.error('Firebase init error:',e);
+    loadLocal();
+  }
+}
+function loadLocal(){
+  setSyncStatus('local');
+  S.participations=lsLoad('bni_parts',[]);
+  S.customEvents=lsLoad('bni_events',[]);
+  S.members=lsLoad('bni_members',[]);
+  render();
+}
+function fbSet(key,data){
+  var fbKey=key==='participations'?'bni_parts':key==='customEvents'?'bni_events':'bni_members';
+  if(firebaseReady&&db){
+    setSyncStatus('saving');
+    db.ref(fbKey).set(data).then(function(){setSyncStatus('connected');}).catch(function(){setSyncStatus('error');lsSave(fbKey,data);});
+  } else {
+    lsSave(fbKey,data);
   }
 }
 
-// ── Inizializzazione ──────────────────────────────────
-if (firebaseReady) {
-  initFirebaseListeners();
-} else {
-  S.participations = lsLoad('bni_parts', []);
-  S.customEvents   = lsLoad('bni_events', []);
-  S.members        = lsLoad('bni_members', []);
-  render();
-}
-
-// ══════════════════════════════════════════════════════
-//  HELPERS
-// ══════════════════════════════════════════════════════
-function dateToStr(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-function today(){ return dateToStr(new Date()); }
-function fmtDate(s){ if(!s)return ''; return new Date(s+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'}); }
-function nextOcc(dayName){ const t=new Date(),target=DAY_NUM[dayName],cur=t.getDay(),diff=(target-cur+7)%7||7,d=new Date(t); d.setDate(t.getDate()+diff); return dateToStr(d); }
-function H(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-// ══════════════════════════════════════════════════════
-//  RENDER
-// ══════════════════════════════════════════════════════
+// ══ RENDER ════════════════════════════════════════════
 function render(){
-  const td=today();
-  document.getElementById('app').innerHTML=buildHero()+buildTabs()+`<div class="content">${buildContent(td)}</div>`+buildModal();
+  var td=today();
+  document.getElementById('app').innerHTML=buildHero()+buildTabs()+
+    '<div class="content">'+buildContent(td)+'</div>'+buildModal();
 }
-
 function buildHero(){
-  const ds=new Date().toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  return `<div class="hero">
-    <div>
-      <div class="hero-title">BNI Via del Sale</div>
-      <div class="hero-sub">Gestionale Capitoli Ibridi &amp; Partecipazioni</div>
-      <div class="hero-date">${H(ds)}</div>
-    </div>
-    <div class="hero-stat">
-      <div class="hero-stat-num">${CHAPTERS.length}</div>
-      <div class="hero-stat-label">capitoli attivi</div>
-      <div class="hero-sync">${firebaseReady ? '🔄 Sincronizzazione attiva' : '⚠️ Modalità locale'}</div>
-    </div>
-  </div>`;
+  var ds=new Date().toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  return '<div class="hero"><div><div class="hero-title">BNI Via del Sale</div><div class="hero-sub">Gestionale Capitoli Ibridi &amp; Partecipazioni</div><div class="hero-date">'+H(ds)+'</div></div><div class="hero-stat"><div class="hero-stat-num">'+CHAPTERS.length+'</div><div class="hero-stat-label">capitoli attivi</div><div class="hero-sync">'+(firebaseReady?'🔄 Sincronizzazione attiva':'⚠️ Modalità locale')+'</div></div></div>';
 }
-
 function buildTabs(){
-  const tabs=[
+  var tabs=[
     {k:'capitoli',l:'Capitoli',n:CHAPTERS.length},
     {k:'agenda',l:'Agenda',n:null},
     {k:'mensile',l:'Calendario Mensile',n:null},
     {k:'partecipazioni',l:'Partecipazioni',n:S.participations.length},
-    {k:'note',l:'Note',n:S.participations.filter(p=>p.note&&p.note.trim()).length},
+    {k:'note',l:'Note',n:S.participations.filter(function(p){return p.note&&p.note.trim();}).length},
     {k:'eventi',l:'Eventi Custom',n:S.customEvents.length},
-    {k:'impostazioni',l:'Impostazioni',n:null},
+    {k:'impostazioni',l:'Impostazioni',n:null}
   ];
-  return `<div class="tabs">${tabs.map(t=>`
-    <button class="tab-btn${S.tab===t.k?' active':''}" onclick="setTab('${t.k}')">
-      ${t.l}${t.n!=null?`<span class="tab-badge">${t.n}</span>`:''}
-    </button>`).join('')}</div>`;
+  return '<div class="tabs">'+tabs.map(function(t){
+    return '<button class="tab-btn'+(S.tab===t.k?' active':'')+'" onclick="setTab(\''+t.k+'\')">'+t.l+(t.n!=null?'<span class="tab-badge">'+t.n+'</span>':'')+'</button>';
+  }).join('')+'</div>';
 }
-
 function buildContent(td){
   if(S.tab==='capitoli')       return buildCapitoli();
   if(S.tab==='agenda')         return buildAgenda(td);
@@ -416,344 +317,320 @@ function buildContent(td){
 
 // ── CAPITOLI ──────────────────────────────────────────
 function buildCapitoli(){
-  const filtered=CHAPTERS.filter(c=>{
-    const ms=c.nome.toLowerCase().includes(S.search.toLowerCase())||c.città.toLowerCase().includes(S.search.toLowerCase());
+  var filtered=CHAPTERS.filter(function(c){
+    var ms=c.nome.toLowerCase().includes(S.search.toLowerCase())||c.città.toLowerCase().includes(S.search.toLowerCase());
     return ms&&(S.fDay==='Tutti'||c.giorno===S.fDay)&&(S.fReg==='Tutte'||c.regione===S.fReg);
   });
-  const dOpts=DAYS_ORDER.map(d=>`<option value="${d}"${S.fDay===d?'selected':''}>${d}</option>`).join('');
-  const rOpts=REGIONI.map(r=>`<option value="${r}"${S.fReg===r?'selected':''}>${H(r)}</option>`).join('');
-  const cards=filtered.map(c=>{
-    const dc=DAY_COL[c.giorno]||'#ccc',rc=REG_COL[c.regione]||'#999';
-    return `<div class="card" style="border-top:4px solid ${dc}">
-      <div class="card-title">${H(c.nome)}</div>
-      <div class="badges">
-        <span class="badge" style="background:${dc}22;color:${dc};font-weight:700">${c.giorno}</span>
-        <span class="badge" style="background:#f3f4f6;color:#555">🕐 ${c.orario}</span>
-        ${c.città?`<span class="badge" style="background:#f3f4f6;color:#555">📍 ${H(c.città)}</span>`:''}
-        <span class="badge" style="background:${rc}22;color:${rc}">${H(c.regione)}</span>
-      </div>
-      <div class="card-actions">
-        <button class="btn-grey" onclick="window.open('${H(c.url)}','_blank')">👥 Scheda Membri</button>
-        <button class="btn-blue" onclick="openReg('${c.id}')">Registrati</button>
-      </div>
-    </div>`;
+  var dOpts=DAYS_ORDER.map(function(d){return '<option value="'+d+'"'+(S.fDay===d?'selected':'')+'>'+d+'</option>';}).join('');
+  var rOpts=REGIONI.map(function(r){return '<option value="'+H(r)+'"'+(S.fReg===r?'selected':'')+'>'+H(r)+'</option>';}).join('');
+  var cards=filtered.map(function(c){
+    var dc=DAY_COL[c.giorno]||'#ccc',rc=REG_COL[c.regione]||'#999';
+    return '<div class="card" style="border-top:4px solid '+dc+'">'+
+      '<div class="card-title">'+H(c.nome)+'</div>'+
+      '<div class="badges">'+
+        '<span class="badge" style="background:'+dc+'22;color:'+dc+';font-weight:700">'+c.giorno+'</span>'+
+        '<span class="badge" style="background:#f3f4f6;color:#555">🕐 '+c.orario+'</span>'+
+        (c.città?'<span class="badge" style="background:#f3f4f6;color:#555">📍 '+H(c.città)+'</span>':'')+
+        '<span class="badge" style="background:'+rc+'22;color:'+rc+'">'+H(c.regione)+'</span>'+
+      '</div>'+
+      '<div class="card-actions">'+
+        '<button class="btn-grey" onclick="window.open(\''+H(c.url)+'\',\'_blank\')">👥 Scheda Membri</button>'+
+        '<button class="btn-blue" onclick="openReg(\''+c.id+'\')">Registrati</button>'+
+      '</div></div>';
   }).join('');
-  return `
-    <div class="filter-bar">
-      <input type="text" placeholder="🔍 Cerca capitolo o città..." value="${H(S.search)}" oninput="S.search=this.value;render()">
-      <select onchange="S.fDay=this.value;render()"><option value="Tutti"${S.fDay==='Tutti'?'selected':''}>Tutti i giorni</option>${dOpts}</select>
-      <select onchange="S.fReg=this.value;render()"><option value="Tutte"${S.fReg==='Tutte'?'selected':''}>Tutte le regioni</option>${rOpts}</select>
-      <span style="color:#aaa;font-size:13px">${filtered.length} capitoli</span>
-    </div>
-    <div class="grid">${cards||'<p style="color:#aaa;padding:20px">Nessun capitolo trovato.</p>'}</div>`;
+  return '<div class="filter-bar">'+
+    '<input type="text" placeholder="🔍 Cerca capitolo o città..." value="'+H(S.search)+'" oninput="S.search=this.value;render()">'+
+    '<select onchange="S.fDay=this.value;render()"><option value="Tutti"'+(S.fDay==='Tutti'?'selected':'')+'>Tutti i giorni</option>'+dOpts+'</select>'+
+    '<select onchange="S.fReg=this.value;render()"><option value="Tutte"'+(S.fReg==='Tutte'?'selected':'')+'>Tutte le regioni</option>'+rOpts+'</select>'+
+    '<span style="color:#aaa;font-size:13px">'+filtered.length+' capitoli</span>'+
+    '</div><div class="grid">'+(cards||'<p style="color:#aaa;padding:20px">Nessun risultato.</p>')+'</div>';
 }
 
 // ── AGENDA ────────────────────────────────────────────
 function buildAgenda(td){
-  const days=[];
-  for(let i=0;i<28;i++){
-    const d=new Date();d.setDate(d.getDate()+i);
-    const ds=dateToStr(d),dn=d.toLocaleDateString('it-IT',{weekday:'long'}),dayName=dn.charAt(0).toUpperCase()+dn.slice(1);
-    const chs=CHAPTERS.filter(c=>c.giorno===dayName);
-    const evs=S.customEvents.filter(e=>e.data===ds);
-    const pts=S.participations.filter(p=>p.date===ds);
-    if(chs.length||evs.length) days.push({ds,dayName,chs,evs,pts});
+  var days=[];
+  for(var i=0;i<28;i++){
+    var d=new Date();d.setDate(d.getDate()+i);
+    var ds=dateToStr(d),dn=d.toLocaleDateString('it-IT',{weekday:'long'}),dayName=dn.charAt(0).toUpperCase()+dn.slice(1);
+    var chs=CHAPTERS.filter(function(c){return c.giorno===dayName;});
+    var evs=S.customEvents.filter(function(e){return e.data===ds;});
+    var pts=S.participations.filter(function(p){return p.date===ds;});
+    if(chs.length||evs.length) days.push({ds:ds,dayName:dayName,chs:chs,evs:evs,pts:pts});
   }
-  if(!days.length) return `<div class="empty"><div class="empty-icon">📅</div><p>Nessun evento nelle prossime 4 settimane.</p></div>`;
-  return `<p class="hint">Prossime 4 settimane — capitoli pianificati con partecipazioni registrate</p>`+
-  days.map(day=>{
-    const isT=day.ds===td;
-    const cRows=day.chs.map(c=>{
-      const myP=day.pts.find(p=>p.chapterId===c.id),dc=DAY_COL[c.giorno]||'#999';
-      return `<div class="agenda-row${myP?' reg':''}">
-        <span class="agenda-time" style="background:${dc}">${c.orario}</span>
-        <div style="flex:1;min-width:0"><div class="agenda-name">${H(c.nome)}</div>${c.città?`<div class="agenda-city">📍 ${H(c.città)}</div>`:''}</div>
-        ${myP?`<span style="font-size:13px;color:#cc0000;font-weight:700;flex-shrink:0">✅ ${H(myP.memberName)}</span>`:''}
-        <button class="btn-sm" onclick="window.open('${H(c.url)}','_blank')">👥</button>
-        <button class="btn-sm${myP?'':' btn-sm-blue'}" onclick="openReg('${c.id}')">Registrati</button>
-      </div>`;
+  if(!days.length) return '<div class="empty"><div class="empty-icon">📅</div><p>Nessun evento nelle prossime 4 settimane.</p></div>';
+  return '<p class="hint">Prossime 4 settimane</p>'+days.map(function(day){
+    var isT=day.ds===td;
+    var cRows=day.chs.map(function(c){
+      var myP=day.pts.find(function(p){return p.chapterId===c.id;}),dc=DAY_COL[c.giorno]||'#999';
+      return '<div class="agenda-row'+(myP?' reg':'')+'">'+
+        '<span class="agenda-time" style="background:'+dc+'">'+c.orario+'</span>'+
+        '<div style="flex:1;min-width:0"><div class="agenda-name">'+H(c.nome)+'</div>'+(c.città?'<div class="agenda-city">📍 '+H(c.città)+'</div>':'')+'</div>'+
+        (myP?'<span style="font-size:13px;color:#cc0000;font-weight:700;flex-shrink:0">✅ '+H(myP.memberName)+'</span>':'')+
+        '<button class="btn-sm" onclick="window.open(\''+H(c.url)+'\',\'_blank\')">👥</button>'+
+        '<button class="btn-sm'+(myP?'':' btn-sm-blue')+'" onclick="openReg(\''+c.id+'\')">Registrati</button>'+
+        '</div>';
     }).join('');
-    const eRows=day.evs.map(e=>`
-      <div class="agenda-row evt">
-        <span class="agenda-time" style="background:#f97316">${e.orario||'--:--'}</span>
-        <div style="flex:1"><div class="agenda-name">⭐ ${H(e.nome)}</div>${e.città?`<div class="agenda-city">📍 ${H(e.città)}</div>`:''}${e.note?`<div style="font-size:12px;color:#777;font-style:italic">${H(e.note)}</div>`:''}</div>
-        ${e.url?`<button class="btn-sm" onclick="window.open('${H(e.url)}','_blank')">🔗</button>`:''}
-      </div>`).join('');
-    return `<div class="agenda-block">
-      <div class="agenda-hd ${isT?'today':'normal'}">
-        <span>${isT?'📍 OGGI — ':''}${H(fmtDate(day.ds))}</span>
-        <span style="font-size:13px;opacity:.75">${day.chs.length+day.evs.length} eventi · ${day.pts.length} iscritti</span>
-      </div>
-      <div class="agenda-body">${cRows}${eRows}</div>
-    </div>`;
+    var eRows=day.evs.map(function(e){
+      return '<div class="agenda-row evt">'+
+        '<span class="agenda-time" style="background:#f97316">'+(e.orario||'--:--')+'</span>'+
+        '<div style="flex:1"><div class="agenda-name">⭐ '+H(e.nome)+'</div>'+(e.città?'<div class="agenda-city">📍 '+H(e.città)+'</div>':'')+(e.note?'<div style="font-size:12px;color:#777;font-style:italic">'+H(e.note)+'</div>':'')+'</div>'+
+        (e.url?'<button class="btn-sm" onclick="window.open(\''+H(e.url)+'\',\'_blank\')">🔗</button>':'')+
+        '</div>';
+    }).join('');
+    return '<div class="agenda-block">'+
+      '<div class="agenda-hd '+(isT?'today':'normal')+'">'+
+        '<span>'+(isT?'📍 OGGI — ':'')+H(fmtDate(day.ds))+'</span>'+
+        '<span style="font-size:13px;opacity:.75">'+(day.chs.length+day.evs.length)+' eventi · '+day.pts.length+' iscritti</span>'+
+      '</div>'+
+      '<div class="agenda-body">'+cRows+eRows+'</div>'+
+      '</div>';
   }).join('');
 }
 
 // ── MENSILE ───────────────────────────────────────────
 function buildMensile(td){
-  const dim=new Date(S.calYear,S.calMonth+1,0).getDate();
-  let firstWD=1,offset=0;
-  for(let d=1;d<=dim;d++){const wd=new Date(S.calYear,S.calMonth,d).getDay();if(wd>=1&&wd<=5){firstWD=d;offset=wd-1;break;}}
-  const cells=[];
-  for(let i=0;i<offset;i++) cells.push(null);
-  for(let d=firstWD;d<=dim;d++){
-    const date=new Date(S.calYear,S.calMonth,d),wd=date.getDay();
+  var dim=new Date(S.calYear,S.calMonth+1,0).getDate(),firstWD=1,offset=0;
+  for(var d=1;d<=dim;d++){var wd=new Date(S.calYear,S.calMonth,d).getDay();if(wd>=1&&wd<=5){firstWD=d;offset=wd-1;break;}}
+  var cells=[];
+  for(var i=0;i<offset;i++) cells.push(null);
+  for(var d=firstWD;d<=dim;d++){
+    var date=new Date(S.calYear,S.calMonth,d),wd=date.getDay();
     if(wd>=1&&wd<=5){
-      const ds=dateToStr(date),dayName=DAY_FROM_IDX[wd];
-      cells.push({dayNum:d,ds,dayName,chs:CHAPTERS.filter(c=>c.giorno===dayName),evs:S.customEvents.filter(e=>e.data===ds),pts:S.participations.filter(p=>p.date===ds),isToday:ds===td});
+      var ds=dateToStr(date),dayName=DAY_FROM_IDX[wd];
+      cells.push({dayNum:d,ds:ds,dayName:dayName,
+        chs:CHAPTERS.filter(function(c){return c.giorno===dayName;}),
+        evs:S.customEvents.filter(function(e){return e.data===ds;}),
+        pts:S.participations.filter(function(p){return p.date===ds;}),
+        isToday:ds===td});
     }
   }
   while(cells.length%5!==0) cells.push(null);
-  const hds=['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì'].map(d=>`<div class="cal-hd">${d}</div>`).join('');
-  const grid=cells.map(cell=>{
-    if(!cell) return `<div class="cal-cell empty"></div>`;
-    const hasAct=cell.pts.length>0||cell.evs.length>0;
-    const cls='cal-cell'+(cell.isToday?' today':hasAct?' active':'');
-    const parts=cell.pts.map(p=>`<div class="cal-part">👤 ${H(p.memberName)}</div><div class="cal-chapname">${H(p.chapterName.replace('BNI ','').split(' - ')[0])}</div>`).join('');
-    const dots=cell.chs.length?`<div class="cal-dots">${cell.chs.map(c=>`<span class="cal-dot" style="background:${DAY_COL[c.giorno]||'#ccc'}" title="${H(c.nome)}"></span>`).join('')}</div>`:'';
-    const evs=cell.evs.map(e=>`<div class="cal-evbadge">⭐ ${H(e.nome)}</div>`).join('');
-    return `<div class="${cls}" onclick="openDayDetail('${cell.ds}')"><div class="cal-day">${cell.dayNum}</div>${parts}${dots}${evs}</div>`;
+  var hds=['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì'].map(function(d){return '<div class="cal-hd">'+d+'</div>';}).join('');
+  var grid=cells.map(function(cell){
+    if(!cell) return '<div class="cal-cell empty"></div>';
+    var hasAct=cell.pts.length>0||cell.evs.length>0;
+    var cls='cal-cell'+(cell.isToday?' today':hasAct?' active':'');
+    var parts=cell.pts.map(function(p){return '<div class="cal-part">👤 '+H(p.memberName)+'</div><div class="cal-chapname">'+H(p.chapterName.replace('BNI ','').split(' - ')[0])+'</div>';}).join('');
+    var dots=cell.chs.length?'<div class="cal-dots">'+cell.chs.map(function(c){return '<span class="cal-dot" style="background:'+(DAY_COL[c.giorno]||'#ccc')+'" title="'+H(c.nome)+'"></span>';}).join('')+'</div>':'';
+    var evs=cell.evs.map(function(e){return '<div class="cal-evbadge">⭐ '+H(e.nome)+'</div>';}).join('');
+    return '<div class="'+cls+'" onclick="openDayDetail(\''+cell.ds+'\')"><div class="cal-day">'+cell.dayNum+'</div>'+parts+dots+evs+'</div>';
   }).join('');
-  let detail='';
+  var detail='';
   if(S.calDayDetail){
-    const dc=cells.find(c=>c&&c.ds===S.calDayDetail);
+    var dc=null;
+    for(var i=0;i<cells.length;i++){if(cells[i]&&cells[i].ds===S.calDayDetail){dc=cells[i];break;}}
     if(dc){
-      const dPts=dc.pts.map(p=>`<div style="background:#eff6ff;border-radius:8px;padding:8px 12px;margin-bottom:7px;font-size:14px"><div style="font-weight:700">👤 ${H(p.memberName)}</div><div style="color:#555;font-size:13px">${H(p.chapterName)}</div><div style="color:#888;font-size:12px">🕐 ${p.orario}</div>${p.note?`<div style="margin-top:5px;padding:5px 8px;background:#fef3c7;border-radius:6px;font-size:12px;color:#92400e">📝 ${H(p.note)}</div>`:''}</div>`).join('');
-      const dChs=dc.chs.map(c=>`<div class="detail-chap"><span class="agenda-time" style="background:${DAY_COL[c.giorno]||'#999'};font-size:12px">${c.orario}</span><span class="detail-chap-name">${H(c.nome)}</span><button class="btn-sm" onclick="window.open('${H(c.url)}','_blank')">👥</button><button class="btn-sm btn-sm-blue" onclick="openReg('${c.id}');S.calDayDetail=null">Registrati</button></div>`).join('');
-      const dEvs=dc.evs.map(e=>`<div class="detail-event"><strong>${H(e.nome)}</strong>${e.orario?' · '+e.orario:''}${e.città?`<br><small>📍 ${H(e.città)}</small>`:''}${e.note?`<br><small style="color:#888;font-style:italic">${H(e.note)}</small>`:''}</div>`).join('');
-      detail=`<div style="background:white;border-radius:12px;padding:18px;margin-top:14px;box-shadow:0 1px 4px rgba(0,0,0,.1)">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <strong style="font-size:15px">📅 ${H(fmtDate(S.calDayDetail))}</strong>
-          <button class="btn-sm" onclick="S.calDayDetail=null;render()">✕ Chiudi</button>
-        </div>
-        ${dc.pts.length?`<div class="detail-sec" style="color:#1d4ed8">✅ Partecipazioni</div>${dPts}`:''}
-        ${dc.chs.length?`<div class="detail-sec">Capitoli in agenda (${dc.chs.length})</div>${dChs}`:''}
-        ${dc.evs.length?`<div class="detail-sec" style="color:#f97316">⭐ Eventi custom</div>${dEvs}`:''}
-        ${!dc.pts.length&&!dc.chs.length&&!dc.evs.length?'<p style="color:#bbb;text-align:center;padding:20px">Nessun evento.</p>':''}
-      </div>`;
+      var dPts=dc.pts.map(function(p){return '<div style="background:#eff6ff;border-radius:8px;padding:8px 12px;margin-bottom:7px;font-size:14px"><div style="font-weight:700">👤 '+H(p.memberName)+'</div><div style="color:#555;font-size:13px">'+H(p.chapterName)+'</div><div style="color:#888;font-size:12px">🕐 '+p.orario+'</div>'+(p.note?'<div style="margin-top:5px;padding:5px 8px;background:#fef3c7;border-radius:6px;font-size:12px;color:#92400e">📝 '+H(p.note)+'</div>':'')+'</div>';}).join('');
+      var dChs=dc.chs.map(function(c){return '<div class="detail-chap"><span class="agenda-time" style="background:'+(DAY_COL[c.giorno]||'#999')+';font-size:12px">'+c.orario+'</span><span class="detail-chap-name">'+H(c.nome)+'</span><button class="btn-sm" onclick="window.open(\''+H(c.url)+'\',\'_blank\')">👥</button><button class="btn-sm btn-sm-blue" onclick="openReg(\''+c.id+'\');S.calDayDetail=null">Registrati</button></div>';}).join('');
+      var dEvs=dc.evs.map(function(e){return '<div class="detail-event"><strong>'+H(e.nome)+'</strong>'+(e.orario?' · '+e.orario:'')+(e.città?'<br><small>📍 '+H(e.città)+'</small>':'')+(e.note?'<br><small style="color:#888;font-style:italic">'+H(e.note)+'</small>':'')+'</div>';}).join('');
+      detail='<div style="background:white;border-radius:12px;padding:18px;margin-top:14px;box-shadow:0 1px 4px rgba(0,0,0,.1)">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><strong style="font-size:15px">📅 '+H(fmtDate(S.calDayDetail))+'</strong><button class="btn-sm" onclick="S.calDayDetail=null;render()">✕ Chiudi</button></div>'+
+        (dc.pts.length?'<div style="font-weight:700;font-size:14px;color:#1d4ed8;margin:10px 0 8px">✅ Partecipazioni</div>'+dPts:'')+
+        (dc.chs.length?'<div style="font-weight:700;font-size:14px;margin:10px 0 8px">Capitoli in agenda ('+dc.chs.length+')</div>'+dChs:'')+
+        (dc.evs.length?'<div style="font-weight:700;font-size:14px;color:#f97316;margin:10px 0 8px">⭐ Eventi custom</div>'+dEvs:'')+
+        (!dc.pts.length&&!dc.chs.length&&!dc.evs.length?'<p style="color:#bbb;text-align:center;padding:20px">Nessun evento.</p>':'')+
+        '</div>';
     }
   }
-  return `
-    <div class="cal-nav">
-      <button class="cal-nav-btn" onclick="calPrev()">‹</button>
-      <div class="cal-month">${MONTHS_IT[S.calMonth]} ${S.calYear}</div>
-      <button class="cal-nav-btn" onclick="calNext()">›</button>
-    </div>
-    <div class="cal-hd-row">${hds}</div>
-    <div class="cal-grid">${grid}</div>
-    <div class="cal-legend">
-      <span><span class="cal-dot" style="background:#1d4ed8;width:12px;height:12px;vertical-align:middle;margin-right:5px"></span>Partecipazione registrata</span>
-      <span><span class="cal-dot" style="background:#ef4444;width:12px;height:12px;vertical-align:middle;margin-right:5px"></span>Capitolo in agenda</span>
-      <span><span class="cal-dot" style="background:#f97316;width:12px;height:12px;vertical-align:middle;margin-right:5px"></span>Evento custom</span>
-    </div>${detail}`;
+  return '<div class="cal-nav"><button class="cal-nav-btn" onclick="calPrev()">‹</button><div class="cal-month">'+MONTHS_IT[S.calMonth]+' '+S.calYear+'</div><button class="cal-nav-btn" onclick="calNext()">›</button></div>'+
+    '<div class="cal-hd-row">'+hds+'</div><div class="cal-grid">'+grid+'</div>'+
+    '<div class="cal-legend"><span><span class="cal-dot" style="background:#1d4ed8;width:12px;height:12px;vertical-align:middle;margin-right:5px"></span>Partecipazione</span><span><span class="cal-dot" style="background:#ef4444;width:12px;height:12px;vertical-align:middle;margin-right:5px"></span>Capitolo in agenda</span><span><span class="cal-dot" style="background:#f97316;width:12px;height:12px;vertical-align:middle;margin-right:5px"></span>Evento custom</span></div>'+detail;
 }
 
 // ── PARTECIPAZIONI ────────────────────────────────────
 function buildPartecipazioni(td){
-  const up=S.participations.filter(p=>p.date>=td).sort((a,b)=>a.date.localeCompare(b.date));
-  const pa=S.participations.filter(p=>p.date<td).sort((a,b)=>b.date.localeCompare(a.date));
-  if(!S.participations.length) return `<div class="empty"><div class="empty-icon">📋</div><p>Nessuna partecipazione registrata.</p><p style="font-size:13px;margin-top:8px">Vai su "Capitoli" e clicca "Registrati".</p></div>`;
-  return `${up.length?`<div class="section-hd">Prossime (${up.length})</div>${up.map(p=>buildPCard(p,false)).join('')}`:''}${pa.length?`<div class="section-hd" style="color:#6b7280;margin-top:20px">Passate (${pa.length})</div>${pa.map(p=>buildPCard(p,true)).join('')}`:''}`;
+  var up=S.participations.filter(function(p){return p.date>=td;}).sort(function(a,b){return a.date.localeCompare(b.date);});
+  var pa=S.participations.filter(function(p){return p.date<td;}).sort(function(a,b){return b.date.localeCompare(a.date);});
+  if(!S.participations.length) return '<div class="empty"><div class="empty-icon">📋</div><p>Nessuna partecipazione registrata.</p></div>';
+  return (up.length?'<div class="section-hd">Prossime ('+up.length+')</div>'+up.map(function(p){return buildPCard(p,false);}).join(''):'')+
+    (pa.length?'<div class="section-hd" style="color:#6b7280;margin-top:20px">Passate ('+pa.length+')</div>'+pa.map(function(p){return buildPCard(p,true);}).join(''):' ');
 }
 function buildPCard(p,isPast){
-  const isConf=S.confirmDeleteId===p.id;
-  const delRow=isConf?`<div class="del-confirm"><span style="font-size:13px;color:#b91c1c;font-weight:600;flex:1">Sei sicuro?</span><button class="btn-cancel-del" onclick="S.confirmDeleteId=null;render()">Annulla</button><button class="btn-ok-del" onclick="delPart('${p.id}')">Sì, cancella</button></div>`:
-    `<button class="btn-del" onclick="S.confirmDeleteId='${p.id}';render()">🗑️ ${isPast?'Elimina partecipazione':'Cancella la mia iscrizione'}</button>`;
-  const cited=p.citedMember?`<span class="badge-cited">⚠️ ${H(p.citedMember)}</span>`:'';
-  return `<div class="pcard${isPast?' past':''}">
-    <div class="pcard-top">
-      <div class="pcard-info">
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
-          <div style="font-weight:700;font-size:15px">${H(p.chapterName)}</div>
-          <span class="badge-member">👤 ${H(p.memberName)}</span>${cited}
-        </div>
-        <div style="font-size:13px;color:#666;margin-top:3px">📅 ${H(fmtDate(p.date))} &nbsp;🕐 ${p.orario}</div>
-        ${p.città?`<div style="font-size:12px;color:#aaa">📍 ${H(p.città)}</div>`:''}
-        ${p.note?`<div class="pcard-note-box">📝 ${H(p.note)}</div>`:''}
-      </div>
-      <div class="pcard-icons">
-        <button class="btn-sm" onclick="window.open('${H(p.url)}','_blank')">👥</button>
-        <button class="btn-sm" onclick="openNote('${p.id}')">📝</button>
-      </div>
-    </div>
-    <div class="pcard-del-row">${delRow}</div>
-  </div>`;
+  var isConf=S.confirmDeleteId===p.id;
+  var delRow=isConf?
+    '<div class="del-confirm"><span style="font-size:13px;color:#b91c1c;font-weight:600;flex:1">Sei sicuro?</span><button class="btn-cancel-del" onclick="S.confirmDeleteId=null;render()">Annulla</button><button class="btn-ok-del" onclick="delPart(\''+p.id+'\')">Sì, cancella</button></div>':
+    '<button class="btn-del" onclick="S.confirmDeleteId=\''+p.id+'\';render()">🗑️ '+(isPast?'Elimina partecipazione':'Cancella la mia iscrizione')+'</button>';
+  var cited=p.citedMember?'<span class="badge-cited">⚠️ '+H(p.citedMember)+'</span>':'';
+  return '<div class="pcard'+(isPast?' past':'')+'">'+
+    '<div class="pcard-top">'+
+      '<div style="flex:1">'+
+        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">'+
+          '<div style="font-weight:700;font-size:15px">'+H(p.chapterName)+'</div>'+
+          '<span class="badge-member">👤 '+H(p.memberName)+'</span>'+cited+
+        '</div>'+
+        '<div style="font-size:13px;color:#666;margin-top:3px">📅 '+H(fmtDate(p.date))+' &nbsp;🕐 '+p.orario+'</div>'+
+        (p.città?'<div style="font-size:12px;color:#aaa">📍 '+H(p.città)+'</div>':'')+
+        (p.note?'<div class="pcard-note-box">📝 '+H(p.note)+'</div>':'')+
+      '</div>'+
+      '<div class="pcard-icons">'+
+        '<button class="btn-sm" onclick="window.open(\''+H(p.url)+'\',\'_blank\')">👥</button>'+
+        '<button class="btn-sm" onclick="openNote(\''+p.id+'\')">📝</button>'+
+      '</div>'+
+    '</div>'+
+    '<div class="pcard-del-row">'+delRow+'</div>'+
+    '</div>';
 }
 
 // ── NOTE ──────────────────────────────────────────────
 function buildNote(){
-  const withNotes=S.participations.filter(p=>p.note&&p.note.trim()).sort((a,b)=>b.date.localeCompare(a.date));
-  if(!withNotes.length) return `<div class="empty"><div class="empty-icon">📒</div><p>Nessuna nota ancora.</p></div>`;
-  return `<p class="hint">Tutte le note e gli appunti lasciati dopo le partecipazioni</p>`+withNotes.map(p=>{
-    const cited=p.citedMember?`<span class="badge-cited">⚠️ ${H(p.citedMember)}</span>`:'';
-    return `<div class="note-card">
-      <div class="note-card-hd">
-        <div style="flex:1">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
-            <div class="note-card-title">${H(p.chapterName)}</div>
-            <span class="badge-member">👤 ${H(p.memberName)}</span>${cited}
-          </div>
-          <div style="font-size:13px;color:#666;margin-top:3px">📅 ${H(fmtDate(p.date))} · 🕐 ${p.orario}${p.città?' · 📍 '+H(p.città):''}</div>
-        </div>
-        <div style="display:flex;gap:6px;flex-shrink:0;margin-left:12px">
-          <button class="btn-sm" onclick="window.open('${H(p.url)}','_blank')">👥</button>
-          <button class="btn-sm" style="background:#fef3c7" onclick="openNote('${p.id}')">✏️</button>
-        </div>
-      </div>
-      <div class="note-body">📝 ${H(p.note)}</div>
-    </div>`;
+  var wn=S.participations.filter(function(p){return p.note&&p.note.trim();}).sort(function(a,b){return b.date.localeCompare(a.date);});
+  if(!wn.length) return '<div class="empty"><div class="empty-icon">📒</div><p>Nessuna nota ancora.</p></div>';
+  return '<p class="hint">Tutte le note e gli appunti lasciati dopo le partecipazioni</p>'+wn.map(function(p){
+    var cited=p.citedMember?'<span class="badge-cited">⚠️ '+H(p.citedMember)+'</span>':'';
+    return '<div class="note-card">'+
+      '<div class="note-card-hd">'+
+        '<div style="flex:1">'+
+          '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">'+
+            '<div style="font-weight:700;font-size:16px">'+H(p.chapterName)+'</div>'+
+            '<span class="badge-member">👤 '+H(p.memberName)+'</span>'+cited+
+          '</div>'+
+          '<div style="font-size:13px;color:#666;margin-top:3px">📅 '+H(fmtDate(p.date))+' · 🕐 '+p.orario+(p.città?' · 📍 '+H(p.città):'')+'</div>'+
+        '</div>'+
+        '<div style="display:flex;gap:6px;flex-shrink:0;margin-left:12px">'+
+          '<button class="btn-sm" onclick="window.open(\''+H(p.url)+'\',\'_blank\')">👥</button>'+
+          '<button class="btn-sm" style="background:#fef3c7" onclick="openNote(\''+p.id+'\')">✏️</button>'+
+        '</div>'+
+      '</div>'+
+      '<div class="note-body">📝 '+H(p.note)+'</div>'+
+      '</div>';
   }).join('');
 }
 
 // ── EVENTI ────────────────────────────────────────────
 function buildEventi(){
-  const sorted=[...S.customEvents].sort((a,b)=>a.data.localeCompare(b.data));
-  const cards=sorted.length?`<div class="grid">${sorted.map(e=>`
-    <div class="evcard">
-      <div style="font-weight:700;font-size:15px;margin-bottom:5px">⭐ ${H(e.nome)}</div>
-      <div style="font-size:14px;color:#666;margin-bottom:3px">📅 ${H(fmtDate(e.data))}${e.orario?' · 🕐 '+e.orario:''}</div>
-      ${e.città?`<div style="font-size:13px;color:#888;margin-bottom:3px">📍 ${H(e.città)}</div>`:''}
-      ${e.note?`<div style="font-size:13px;color:#999;font-style:italic;margin-bottom:6px">${H(e.note)}</div>`:''}
-      <div class="evcard-actions">
-        ${e.url?`<button class="btn-ev-link" onclick="window.open('${H(e.url)}','_blank')">🔗 Link</button>`:''}
-        <button class="btn-ev-del" onclick="delEvt('${e.id}')">🗑️ Elimina</button>
-      </div>
-    </div>`).join('')}</div>`:
-    `<div class="empty"><div class="empty-icon">⭐</div><p>Nessun evento custom.</p></div>`;
-  return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div class="section-hd" style="margin:0">Eventi Congiunti &amp; Custom</div><button class="btn-red" onclick="S.showEvt=true;render()">➕ Aggiungi Evento</button></div>${cards}`;
+  var sorted=[].concat(S.customEvents).sort(function(a,b){return a.data.localeCompare(b.data);});
+  var cards=sorted.length?'<div class="grid">'+sorted.map(function(e){
+    return '<div class="evcard">'+
+      '<div style="font-weight:700;font-size:15px;margin-bottom:5px">⭐ '+H(e.nome)+'</div>'+
+      '<div style="font-size:14px;color:#666;margin-bottom:3px">📅 '+H(fmtDate(e.data))+(e.orario?' · 🕐 '+e.orario:'')+'</div>'+
+      (e.città?'<div style="font-size:13px;color:#888;margin-bottom:3px">📍 '+H(e.città)+'</div>':'')+
+      (e.note?'<div style="font-size:13px;color:#999;font-style:italic;margin-bottom:6px">'+H(e.note)+'</div>':'')+
+      '<div class="evcard-actions">'+
+        (e.url?'<button class="btn-ev-link" onclick="window.open(\''+H(e.url)+'\',\'_blank\')">🔗 Link</button>':'')+
+        '<button class="btn-ev-del" onclick="delEvt(\''+e.id+'\')">🗑️ Elimina</button>'+
+      '</div></div>';
+  }).join('')+'</div>':'<div class="empty"><div class="empty-icon">⭐</div><p>Nessun evento custom.</p></div>';
+  return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div class="section-hd" style="margin:0">Eventi Congiunti &amp; Custom</div><button class="btn-red" onclick="S.showEvt=true;render()">➕ Aggiungi Evento</button></div>'+cards;
 }
 
 // ── IMPOSTAZIONI ──────────────────────────────────────
 function buildImpostazioni(){
-  const tags=S.members.length?S.members.map(m=>`<span class="member-tag">👤 ${H(m)}<button class="member-del-btn" onclick="delMember('${H(m)}')">×</button></span>`).join(''):`<p style="color:#bbb;font-size:13px">Nessun membro aggiunto.</p>`;
-  return `<div class="settings-card">
-    <div style="font-size:16px;font-weight:700;margin-bottom:8px">Membri Via del Sale</div>
-    <div style="color:#777;font-size:14px;margin-bottom:14px">Aggiungi i nomi dei membri per la selezione rapida e per citarli nelle note.</div>
-    <div style="display:flex;gap:8px"><input id="newMemberInput" type="text" class="fi" style="flex:1" placeholder="Nome e Cognome" onkeydown="if(event.key==='Enter')addMember()"><button class="btn-red" onclick="addMember()">Aggiungi</button></div>
-    <div class="member-tags">${tags}</div>
-  </div>`;
+  var tags=S.members.length?S.members.map(function(m){return '<span class="member-tag">👤 '+H(m)+'<button class="member-del-btn" onclick="delMember(\''+H(m)+'\')">×</button></span>';}).join(''):'<p style="color:#bbb;font-size:13px">Nessun membro aggiunto.</p>';
+  return '<div class="settings-card">'+
+    '<div style="font-size:16px;font-weight:700;margin-bottom:8px">Membri Via del Sale</div>'+
+    '<div style="color:#777;font-size:14px;margin-bottom:14px">Aggiungi i nomi dei membri per la selezione rapida e per citarli nelle note.</div>'+
+    '<div style="display:flex;gap:8px"><input id="newMemberInput" type="text" class="fi" style="flex:1" placeholder="Nome e Cognome" onkeydown="if(event.key===\'Enter\')addMember()"><button class="btn-red" onclick="addMember()">Aggiungi</button></div>'+
+    '<div class="member-tags">'+tags+'</div>'+
+    '</div>';
 }
 
 // ── MODALI ────────────────────────────────────────────
 function buildModal(){
   if(S.showReg&&S.selChap) return buildModalReg();
   if(S.showNote&&S.selPart) return buildModalNote();
-  if(S.showEvt)             return buildModalEvt();
+  if(S.showEvt) return buildModalEvt();
   return '';
 }
 function buildModalReg(){
-  const c=S.selChap;
-  const memOpts=S.members.length?S.members.map(m=>`<option value="${H(m)}">${H(m)}</option>`).join(''):'';
-  const selField=S.members.length?`<label class="fl">Membro Via del Sale *</label><select id="regMember" class="fi">${memOpts}<option value="">— Inserisci manualmente —</option></select><input id="regMemberManual" type="text" class="fi" style="margin-top:8px;display:none" placeholder="Nome e Cognome"><script>document.getElementById('regMember').addEventListener('change',function(){document.getElementById('regMemberManual').style.display=this.value===''?'block':'none'});<\/script>`:
-    `<label class="fl">Membro Via del Sale *</label><input id="regMember" type="text" class="fi" placeholder="Nome e Cognome">`;
-  return `<div class="modal-overlay" onclick="if(event.target.classList.contains('modal-overlay')){S.showReg=false;render()}">
-    <div class="modal-box">
-      <div class="modal-hd"><div class="modal-title">Registrati alla visita</div><button class="modal-close" onclick="S.showReg=false;render()">×</button></div>
-      <div class="modal-chap-info">${H(c.nome)}<br><span style="color:#666;font-weight:400">${c.giorno} · ${c.orario}${c.città?' · '+c.città:''}</span></div>
-      ${selField}
-      <label class="fl">Data dell'evento *</label>
-      <input id="regDate" type="date" class="fi" value="${nextOcc(c.giorno)}">
-      <label class="fl">Note (opzionale)</label>
-      <textarea id="regNote" class="fi"></textarea>
-      <div class="modal-actions">
-        <button class="btn-ma-cancel" onclick="S.showReg=false;render()">Annulla</button>
-        <button class="btn-ma-ok blue" onclick="submitReg()">Conferma</button>
-      </div>
-    </div>
-  </div>`;
+  var c=S.selChap;
+  var memOpts=S.members.map(function(m){return '<option value="'+H(m)+'">'+H(m)+'</option>';}).join('');
+  var selField=S.members.length?
+    '<label class="fl">Membro Via del Sale *</label><select id="regMember" class="fi">'+memOpts+'<option value="">— Inserisci manualmente —</option></select><input id="regMemberManual" type="text" class="fi" style="margin-top:8px;display:none" placeholder="Nome e Cognome"><script>document.getElementById(\'regMember\').addEventListener(\'change\',function(){document.getElementById(\'regMemberManual\').style.display=this.value===\'\'?\'block\':\'none\';});<\/script>':
+    '<label class="fl">Membro Via del Sale *</label><input id="regMember" type="text" class="fi" placeholder="Nome e Cognome">';
+  return '<div class="modal-overlay" onclick="if(event.target.classList.contains(\'modal-overlay\')){S.showReg=false;render()}">'+
+    '<div class="modal-box">'+
+    '<div class="modal-hd"><div class="modal-title">Registrati alla visita</div><button class="modal-close" onclick="S.showReg=false;render()">×</button></div>'+
+    '<div class="modal-chap-info">'+H(c.nome)+'<br><span style="color:#666;font-weight:400">'+c.giorno+' · '+c.orario+(c.città?' · '+c.città:'')+'</span></div>'+
+    selField+
+    '<label class="fl">Data dell\'evento *</label><input id="regDate" type="date" class="fi" value="'+nextOcc(c.giorno)+'">'+
+    '<label class="fl">Note (opzionale)</label><textarea id="regNote" class="fi"></textarea>'+
+    '<div class="modal-actions"><button class="btn-ma-cancel" onclick="S.showReg=false;render()">Annulla</button><button class="btn-ma-ok blue" onclick="submitReg()">Conferma</button></div>'+
+    '</div></div>';
 }
 function buildModalNote(){
-  const p=S.selPart;
-  const memOpts=S.members.length?`<option value="">-- Nessuno --</option>`+S.members.map(m=>`<option value="${H(m)}"${p.citedMember===m?'selected':''}>${H(m)}</option>`).join(''):`<option value="">-- Nessun membro nelle impostazioni --</option>`;
-  return `<div class="modal-overlay" onclick="if(event.target.classList.contains('modal-overlay')){S.showNote=false;render()}">
-    <div class="modal-box">
-      <div class="modal-hd"><div class="modal-title">📝 Note / Appunti post-evento</div><button class="modal-close" onclick="S.showNote=false;render()">×</button></div>
-      <div style="background:#f9fafb;border-radius:8px;padding:9px 13px;margin-bottom:14px;font-size:14px;color:#555"><strong>${H(p.chapterName)}</strong><br>${H(fmtDate(p.date))} · 👤 ${H(p.memberName)}</div>
-      <label class="fl" style="margin-top:0">Note / Appunti</label>
-      <textarea id="noteText" class="fi" style="height:130px" placeholder="Impressioni, referral ricevuti, follow-up, contatti interessanti...">${H(p.note||'')}</textarea>
-      <label class="fl">⚠️ Cita un membro Via del Sale <span style="font-weight:400;color:#888;font-size:12px">(opzionale)</span></label>
-      <select id="citedMember" class="fi" style="border-color:#ea580c">${memOpts}</select>
-      <div class="modal-actions">
-        <button class="btn-ma-cancel" onclick="S.showNote=false;render()">Annulla</button>
-        <button class="btn-ma-ok red" onclick="saveNote()">Salva Note</button>
-      </div>
-    </div>
-  </div>`;
+  var p=S.selPart;
+  var memOpts='<option value="">-- Nessuno --</option>'+S.members.map(function(m){return '<option value="'+H(m)+'"'+(p.citedMember===m?'selected':'')+'>'+H(m)+'</option>';}).join('');
+  return '<div class="modal-overlay" onclick="if(event.target.classList.contains(\'modal-overlay\')){S.showNote=false;render()}">'+
+    '<div class="modal-box">'+
+    '<div class="modal-hd"><div class="modal-title">📝 Note / Appunti post-evento</div><button class="modal-close" onclick="S.showNote=false;render()">×</button></div>'+
+    '<div style="background:#f9fafb;border-radius:8px;padding:9px 13px;margin-bottom:14px;font-size:14px;color:#555"><strong>'+H(p.chapterName)+'</strong><br>'+H(fmtDate(p.date))+' · 👤 '+H(p.memberName)+'</div>'+
+    '<label class="fl" style="margin-top:0">Note / Appunti</label>'+
+    '<textarea id="noteText" class="fi" style="height:130px" placeholder="Impressioni, referral ricevuti, follow-up...">'+H(p.note||'')+'</textarea>'+
+    '<label class="fl">⚠️ Cita un membro Via del Sale <span style="font-weight:400;color:#888;font-size:12px">(opzionale)</span></label>'+
+    '<select id="citedMember" class="fi" style="border-color:#ea580c">'+memOpts+'</select>'+
+    '<div class="modal-actions"><button class="btn-ma-cancel" onclick="S.showNote=false;render()">Annulla</button><button class="btn-ma-ok red" onclick="saveNote()">Salva Note</button></div>'+
+    '</div></div>';
 }
 function buildModalEvt(){
-  return `<div class="modal-overlay" onclick="if(event.target.classList.contains('modal-overlay')){S.showEvt=false;render()}">
-    <div class="modal-box">
-      <div class="modal-hd"><div class="modal-title">⭐ Aggiungi Evento Custom</div><button class="modal-close" onclick="S.showEvt=false;render()">×</button></div>
-      <label class="fl" style="margin-top:0">Nome evento *</label><input id="evNome" type="text" class="fi" placeholder="Es. Evento Congiunto BNI">
-      <label class="fl">Città / Luogo</label><input id="evCittà" type="text" class="fi" placeholder="Es. Genova">
-      <div class="form-row" style="margin-top:12px">
-        <div><label class="fl" style="margin-top:0">Data *</label><input id="evData" type="date" class="fi"></div>
-        <div><label class="fl" style="margin-top:0">Orario</label><input id="evOrario" type="time" class="fi"></div>
-      </div>
-      <label class="fl">Link (opzionale)</label><input id="evUrl" type="text" class="fi" placeholder="https://...">
-      <label class="fl">Descrizione / Note</label><textarea id="evNote" class="fi"></textarea>
-      <div class="modal-actions">
-        <button class="btn-ma-cancel" onclick="S.showEvt=false;render()">Annulla</button>
-        <button class="btn-ma-ok red" onclick="addEvt()">Aggiungi</button>
-      </div>
-    </div>
-  </div>`;
+  return '<div class="modal-overlay" onclick="if(event.target.classList.contains(\'modal-overlay\')){S.showEvt=false;render()}">'+
+    '<div class="modal-box">'+
+    '<div class="modal-hd"><div class="modal-title">⭐ Aggiungi Evento Custom</div><button class="modal-close" onclick="S.showEvt=false;render()">×</button></div>'+
+    '<label class="fl" style="margin-top:0">Nome evento *</label><input id="evNome" type="text" class="fi" placeholder="Es. Evento Congiunto BNI">'+
+    '<label class="fl">Città / Luogo</label><input id="evCittà" type="text" class="fi" placeholder="Es. Genova">'+
+    '<div class="form-row" style="margin-top:12px"><div><label class="fl" style="margin-top:0">Data *</label><input id="evData" type="date" class="fi"></div><div><label class="fl" style="margin-top:0">Orario</label><input id="evOrario" type="time" class="fi"></div></div>'+
+    '<label class="fl">Link (opzionale)</label><input id="evUrl" type="text" class="fi" placeholder="https://...">'+
+    '<label class="fl">Descrizione / Note</label><textarea id="evNote" class="fi"></textarea>'+
+    '<div class="modal-actions"><button class="btn-ma-cancel" onclick="S.showEvt=false;render()">Annulla</button><button class="btn-ma-ok red" onclick="addEvt()">Aggiungi</button></div>'+
+    '</div></div>';
 }
 
-// ══════════════════════════════════════════════════════
-//  AZIONI
-// ══════════════════════════════════════════════════════
+// ══ AZIONI ════════════════════════════════════════════
 function setTab(t){S.tab=t;S.confirmDeleteId=null;render();}
-function openReg(id){S.selChap=CHAPTERS.find(c=>c.id===id);S.showReg=true;render();}
+function openReg(id){S.selChap=CHAPTERS.find(function(c){return c.id===id;});S.showReg=true;render();}
 function submitReg(){
-  const selEl=document.getElementById('regMember'),manEl=document.getElementById('regMemberManual');
-  let memberName=selEl&&selEl.tagName==='SELECT'?(selEl.value===''&&manEl?manEl.value.trim():selEl.value):(selEl?selEl.value.trim():'');
-  const date=document.getElementById('regDate').value,note=document.getElementById('regNote').value.trim();
+  var selEl=document.getElementById('regMember'),manEl=document.getElementById('regMemberManual');
+  var memberName=selEl&&selEl.tagName==='SELECT'?(selEl.value===''&&manEl?manEl.value.trim():selEl.value):(selEl?selEl.value.trim():'');
+  var date=document.getElementById('regDate').value,note=document.getElementById('regNote').value.trim();
   if(!memberName||!date){alert('Inserisci nome e data.');return;}
-  const c=S.selChap;
-  const newParts=[...S.participations,{id:Date.now().toString(),chapterId:c.id,chapterName:c.nome,città:c.città,giorno:c.giorno,orario:c.orario,url:c.url,memberName,date,note,citedMember:'',ts:Date.now()}];
-  S.participations=newParts;
-  fbSet('participations',newParts);
-  S.showReg=false;S.tab='partecipazioni';render();
+  var c=S.selChap;
+  var newParts=S.participations.concat([{id:Date.now().toString(),chapterId:c.id,chapterName:c.nome,città:c.città,giorno:c.giorno,orario:c.orario,url:c.url,memberName:memberName,date:date,note:note,citedMember:'',ts:Date.now()}]);
+  S.participations=newParts;fbSet('participations',newParts);S.showReg=false;S.tab='partecipazioni';render();
 }
-function openNote(id){S.selPart=S.participations.find(p=>p.id===id);S.showNote=true;render();}
+function openNote(id){S.selPart=S.participations.find(function(p){return p.id===id;});S.showNote=true;render();}
 function saveNote(){
-  const txt=document.getElementById('noteText').value.trim();
-  const cited=(document.getElementById('citedMember')?.value||'').trim();
-  const newParts=S.participations.map(p=>p.id===S.selPart.id?{...p,note:txt,citedMember:cited}:p);
-  S.participations=newParts;fbSet('participations',newParts);
-  S.showNote=false;render();
+  var txt=document.getElementById('noteText').value.trim();
+  var cited=(document.getElementById('citedMember')?document.getElementById('citedMember').value:'').trim();
+  var newParts=S.participations.map(function(p){return p.id===S.selPart.id?Object.assign({},p,{note:txt,citedMember:cited}):p;});
+  S.participations=newParts;fbSet('participations',newParts);S.showNote=false;render();
 }
 function delPart(id){
-  const newParts=S.participations.filter(p=>p.id!==id);
+  var newParts=S.participations.filter(function(p){return p.id!==id;});
   S.participations=newParts;S.confirmDeleteId=null;fbSet('participations',newParts);render();
 }
 function delEvt(id){
-  const newEvts=S.customEvents.filter(e=>e.id!==id);
+  var newEvts=S.customEvents.filter(function(e){return e.id!==id;});
   S.customEvents=newEvts;fbSet('customEvents',newEvts);render();
 }
 function addEvt(){
-  const nome=document.getElementById('evNome').value.trim(),data=document.getElementById('evData').value;
+  var nome=document.getElementById('evNome').value.trim(),data=document.getElementById('evData').value;
   if(!nome||!data){alert('Inserisci nome e data.');return;}
-  const newEvts=[...S.customEvents,{id:Date.now().toString(),nome,città:document.getElementById('evCittà').value.trim(),data,orario:document.getElementById('evOrario').value,url:document.getElementById('evUrl').value.trim(),note:document.getElementById('evNote').value.trim()}];
+  var newEvts=S.customEvents.concat([{id:Date.now().toString(),nome:nome,città:document.getElementById('evCittà').value.trim(),data:data,orario:document.getElementById('evOrario').value,url:document.getElementById('evUrl').value.trim(),note:document.getElementById('evNote').value.trim()}]);
   S.customEvents=newEvts;fbSet('customEvents',newEvts);S.showEvt=false;render();
 }
 function addMember(){
-  const inp=document.getElementById('newMemberInput');
+  var inp=document.getElementById('newMemberInput');
   if(!inp||!inp.value.trim())return;
-  if(S.members.includes(inp.value.trim())){alert('Membro già presente.');return;}
-  const newMems=[...S.members,inp.value.trim()];
+  if(S.members.indexOf(inp.value.trim())>=0){alert('Membro già presente.');return;}
+  var newMems=S.members.concat([inp.value.trim()]);
   S.members=newMems;fbSet('members',newMems);render();
 }
 function delMember(name){
-  const newMems=S.members.filter(m=>m!==name);
+  var newMems=S.members.filter(function(m){return m!==name;});
   S.members=newMems;fbSet('members',newMems);render();
 }
 function calPrev(){if(S.calMonth===0){S.calMonth=11;S.calYear--;}else S.calMonth--;render();}
 function calNext(){if(S.calMonth===11){S.calMonth=0;S.calYear++;}else S.calMonth++;render();}
 function openDayDetail(ds){S.calDayDetail=S.calDayDetail===ds?null:ds;render();}
 
-}); // fine window.onload
+// ══ AVVIO ═════════════════════════════════════════════
+window.addEventListener('load',function(){
+  if(typeof firebase!=='undefined'){
+    initFirebase();
+  } else {
+    loadLocal();
+  }
+});
 </script>
 </body>
 </html>
+
